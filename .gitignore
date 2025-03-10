@@ -1,0 +1,5 @@
+.pio
+.clang_complete
+.ccls
+.direnv
+.platformio-dir
