@@ -18,7 +18,6 @@ Magnometer_Bypass(true);
 void loop() {
   // put your main code here, to run repeatedly:
 
-  Wire.beginTransmission(MPU9255_ADDRESS);
-  Wire.write(0x73);
+
 }
 
