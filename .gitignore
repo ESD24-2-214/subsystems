@@ -1,0 +1,6 @@
+# generated output
+*.png
+*.csv
+
+# octave
+octave-workspace
