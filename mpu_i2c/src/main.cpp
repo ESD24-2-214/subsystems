@@ -9,7 +9,6 @@
 void setup() {
 Serial.begin(115200);
 while (!Serial){};
-pinMode(SDA, OUTPUT);
 
 Wire.begin(SDA, SCL);
 Wire.setClock(ClockSpeed);
