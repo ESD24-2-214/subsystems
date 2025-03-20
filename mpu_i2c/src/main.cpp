@@ -3,6 +3,8 @@
 #include <MPU_I2C.hpp>
 #define ClockSpeed 400000 // 400kHz
 
+#define SDA 18 // Signal Data Line pin
+#define SCL 17 // Signal Clock Line pin
 
 void setup() {
 Serial.begin(115200);
