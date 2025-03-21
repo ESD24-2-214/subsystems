@@ -26,7 +26,7 @@ typedef struct {
 } Vector;
 
 void I2Cbus_SCCAN(void);
-
+void measuremode_config_togle(bool mode);
 void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t bit_pos);
 void Magnometer_Bypass(bool state);
 void read(uint8_t unit_addr, uint8_t local_addr, uint8_t *data, uint8_t size);

@@ -12,6 +12,15 @@ void Magnometer_Bypass(bool state)
   set_bit_config(MPU9255_ADDRESS, Bypass_Enable_Config_add, state, 1);
 }
 
+/* @brief This function is used to configure the measure mode of the magnometer
+** @param mode: true sets measure mode 2, false sets measure mode 1
+** @note This function standart is 16bit resolution
+*/
+void measuremode_config_togle(bool mode){
+  write(AK8963_ADDRESS, CNTL1, B00010110);
+  mode ? write(AK8963_ADDRESS, CNTL1, B00010110) : write(AK8963_ADDRESS, ASTC, B00010010);
+}
+
 /* @brief This function is used to set the bit of a register to a specific value
 ** @param unit_addr: the I2C address of the unit
 ** @param local_addr: the address of the register
@@ -62,7 +71,7 @@ void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte)
 }
 
 /* @brief This function is used to read the accelerometer data
-** @param acc_data: the array to store the accelerometer data in must be of size 3x int16_t
+** @param acc_data: Must be Vector struct
 */
 void read_accelerometer(Vector *acc_data)
 {
@@ -76,7 +85,7 @@ void read_accelerometer(Vector *acc_data)
 }
 
 /* @brief This function is used to read the accelerometer data
-** @param acc_data: the array to store the accelerometer data in must be of size 3x int16_t
+** @param acc_data: Must be Vector struct
 */
 void read_gryroscope(Vector *gyro_data)
 {
@@ -87,7 +96,9 @@ void read_gryroscope(Vector *gyro_data)
   gyro_data -> y = (int16_t)(data[2] << 8 | data[3]);
   gyro_data -> z = (int16_t)(data[4] << 8 | data[5]);
 }
-
+/* @brief This function is used to read the magnetometer data
+** @param mag_data: Must be Vector struct
+*/
 void read_magnetometer(Vector *mag_data)
 {
   uint8_t data[6];
@@ -98,6 +109,8 @@ void read_magnetometer(Vector *mag_data)
   mag_data -> z = (int16_t)(data[5] << 8 | data[4]);
 }
 
+/* @brief This function is used to scan the I2C bus and print the addresses of the devices found
+*/
 void I2Cbus_SCCAN(void){
   Serial.println(">>>Scanning I2C bus<<<");
   for (int i = 0; i < 128; i++)
@@ -116,3 +129,4 @@ void I2Cbus_SCCAN(void){
   }
   Serial.println(">>>Scanning I2C bus complete<<<");
 }
+

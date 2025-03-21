@@ -16,11 +16,7 @@ set_bit_config(MPU9255_ADDRESS, PWR_MGMT_1, true, 7);
 Magnometer_Bypass(true);
 delay(2000);
 I2Cbus_SCCAN();
-write(AK8963_ADDRESS, ASTC, B00000000);
-write(AK8963_ADDRESS, CNTL1, B00010110);
-//delay(1000);
-//write(AK8963_ADDRESS, ASTC, B00000000);
-//set_bit_config(AK8963_ADDRESS, ASTC, false, 6);
+measuremode_config_togle(true);
 }
 
 Vector gyro_data;
@@ -29,7 +25,7 @@ Vector mag_data;
 uint8_t data[6];
 uint8_t data_byte;
 
-void loop() {  
+void loop() {  // testing the magnometer
   read(AK8963_ADDRESS, CNTL1, &data_byte, 1);
   Serial.print("CNTL1 : ");
   Serial.println(data_byte, BIN);
