@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <MPU_I2C.hpp>
 #include <MPU_ADDRESS.hpp>
+#include <AK8963_ADDRESS.hpp>
 
 /* @brief This function is used to enable or disable the bypass mode of the magnometer
 ** @param state: true to enable the bypass mode, false to disable the bypass mode
@@ -39,7 +40,7 @@ void read(uint8_t unit_addr, uint8_t local_addr, uint8_t data[], uint8_t size)
   Wire.beginTransmission(unit_addr);
   Wire.write(local_addr);
   Wire.endTransmission(false);
-  Wire.requestFrom(unit_addr, size, true);
+  Wire.requestFrom(unit_addr, size);
   for (uint8_t i = 0; i < size; i++)
   {
     data[i] = Wire.read();
@@ -63,29 +64,55 @@ void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte)
 /* @brief This function is used to read the accelerometer data
 ** @param acc_data: the array to store the accelerometer data in must be of size 3x int16_t
 */
-void read_accelerometer(int16_t acc_data[])
+void read_accelerometer(Vector *acc_data)
 {
-  if (sizeof(acc_data) != 6){return;}// Error hadling needed
-
   uint8_t data[6];
   read(MPU9255_ADDRESS, ACCEL_XOUT_H, data, 6);
 
-  for (uint8_t i = 0; i < 3; i++){
-    acc_data[i] = (int16_t)(data[2 * i] << 8 | data[2 * i + 1]);
-  }
+  acc_data -> x = (int16_t)(data[0] << 8 | data[1]);
+  acc_data -> y = (int16_t)(data[2] << 8 | data[3]);
+  acc_data -> z = (int16_t)(data[4] << 8 | data[5]);
+  
 }
 
 /* @brief This function is used to read the accelerometer data
 ** @param acc_data: the array to store the accelerometer data in must be of size 3x int16_t
 */
-void read_gryroscope(int16_t gyro_data[])
+void read_gryroscope(Vector *gyro_data)
 {
-  if (sizeof(gyro_data) != 6){return;}// Error hadling needed
-
   uint8_t data[6];
   read(MPU9255_ADDRESS, GYRO_XOUT_H, data, 6);
 
-  for (uint8_t i = 0; i < 3; i++){
-    gyro_data[i] = (int16_t)(data[2 * i] << 8 | data[2 * i + 1]);
+  gyro_data -> x = (int16_t)(data[0] << 8 | data[1]);
+  gyro_data -> y = (int16_t)(data[2] << 8 | data[3]);
+  gyro_data -> z = (int16_t)(data[4] << 8 | data[5]);
+}
+
+void read_magnetometer(Vector *mag_data)
+{
+  uint8_t data[6];
+  read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
+
+  mag_data -> x = (int16_t)(data[1] << 8 | data[0]);
+  mag_data -> y = (int16_t)(data[3] << 8 | data[2]);
+  mag_data -> z = (int16_t)(data[5] << 8 | data[4]);
+}
+
+void I2Cbus_SCCAN(void){
+  Serial.println(">>>Scanning I2C bus<<<");
+  for (int i = 0; i < 128; i++)
+  {
+    Wire.beginTransmission(i);
+    if (Wire.endTransmission() == 0)
+    {
+      Serial.print("I2C device found at address 0x");
+      if (i < 16)
+      {
+        Serial.print("0");
+      }
+      Serial.print(i, HEX);
+      Serial.println(" !");
+    }
   }
+  Serial.println(">>>Scanning I2C bus complete<<<");
 }

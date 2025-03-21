@@ -19,7 +19,7 @@
 #define ZA_OFFSET_H 0x7D
 #define ZA_OFFSET_L 0x7E
 
-#define INT_PIN_CFG 0x37 // Interrupt configuration, set Bit1 ti endable bypassmode
+#define INT_PIN_CFG 0x37 // Interrupt configuration, set Bit1 to endable bypassmode
 
 // Data registers for Gryoscope, Accelerometer and Temperature
 #define ACCEL_XOUT_H 0x3B
@@ -37,3 +37,5 @@
 #define GYRO_ZOUT_H 0x47
 #define GYRO_ZOUT_L 0x48
 
+#define PWR_MGMT_1 0x6B // Power Management 1 register
+#define PWR_MGMT_2 0x6C // Power Management 2 register
