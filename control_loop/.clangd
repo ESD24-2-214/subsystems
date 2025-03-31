@@ -1,0 +1,10 @@
+CompileFlags:
+  Add:
+    - -std=c++20
+    - -I/nix/store/zs2gq6fkglrd28g1nxlb8waqq37cdc2z-gcc-14-20241116/include/c++/14-20241116
+    - -I/nix/store/zs2gq6fkglrd28g1nxlb8waqq37cdc2z-gcc-14-20241116/include/c++/14-20241116/x86_64-unknown-linux-gnu
+    - -I/nix/store/zs2gq6fkglrd28g1nxlb8waqq37cdc2z-gcc-14-20241116/include
+    - -I/nix/store/81mi7m3k3wsiz9rrrg636sx21psj20hc-glibc-2.40-66/include
+    - -I/nix/store/6aci60gk5wj4bjj1rygzbkc6ximmsm17-glibc-2.40-66-dev/include
+    - -I.
+  Remove: [-W*, -g*, -pedantic*]

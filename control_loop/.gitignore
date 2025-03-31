@@ -1,0 +1,9 @@
+*.log
+tmp/
+
+.direnv
+*.out
+
+.cache
+.projectile
+compile_commands.json
