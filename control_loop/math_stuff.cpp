@@ -91,10 +91,24 @@ Bivector matrix_bivector_mul(Matrix3x3 matrix, Bivector bivector) {
 }
 
 Bivector bivector_cross(Bivector a, Bivector b) {
+
+#ifdef DEBUG
+  FNPRINT("\nBivector Cross:\n");
+  FNPRINT("  bivector a:\n");
+  FNPRINT("  %f, %f, %f\n", (double)a.e12, (double)a.e31, (double)a.e23);
+  FNPRINT("  %f, %f, %f\n", (double)b.e12, (double)b.e31, (double)b.e23);
+#endif
+
   // The anti symmetric product of bivectors
-  return Bivector{
+  Bivector res = Bivector{
       .e12 = a.e31 * b.e23 - a.e23 * b.e31,
       .e31 = a.e23 * b.e12 - a.e12 * b.e23,
       .e23 = a.e12 * b.e31 - a.e31 * b.e12,
   };
+
+#ifdef DEBUG
+  FNPRINT("  bivector res:\n");
+  FNPRINT("  %f, %f, %f\n", (double)res.e12, (double)res.e31, (double)res.e23);
+#endif
+  return res;
 }

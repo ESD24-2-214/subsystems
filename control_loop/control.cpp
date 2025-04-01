@@ -42,6 +42,7 @@ float mag_s1 = 0.0f;
 float mag_s2 = 0.0f;
 float mag_s3 = 0.0f;
 Bivector mag1 = Bivector{
+    // This does not exist
     .e12 = magnetorquer_dipole,
     .e31 = 0.0f,
     .e23 = 0.0f,
@@ -54,20 +55,29 @@ Bivector mag2 = Bivector{
 Bivector mag3 = Bivector{
     .e12 = 0.0f,
     .e31 = 0.0f,
-    .e23 = 0.0f,
+    .e23 = magnetorquer_dipole,
 };
 
 // Magnetic Flux Density
 Bivector magnetrix_flux_density{
-    .e12 = 2.0f, // tesla
-    .e31 = 0.0f, // tesla
-    .e23 = 0.0f, // tesla
+    .e12 = 0.0f,  // tesla
+    .e31 = 0.02f, // tesla
+    .e23 = 0.2f,  // tesla
+};
+
+// angluar velocity
+Bivector angluar_velocity{
+    .e12 = 0.5f, // radian / second
+    .e31 = 0.0f, // radian / second
+    .e23 = 0.0f, // radian / second
 };
 
 // Functions
 Bivector angle_err_bivector(Vector current, Vector reference);
 Bivector pid(float K_p, float K_i, float K_d, Bivector error);
 Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density);
+Bivector angle_from_torque(Bivector torque);
+Vector rotate_vector(Vector vector, Bivector angle);
 
 void test();
 
@@ -80,19 +90,22 @@ int main() {
   printf("\x1b[2J");   // clear screen
   printf("\x1b[1;1H"); // place cursor in 1 1
 #endif
+
 #ifdef TEST
   test();
-#endif
-
+#else // do not run the program when testing
   Vector reference = Vector{1, 0, 0};
   Vector current = Vector{0, 1, 0};
 
   Bivector angle_err = angle_err_bivector(current, reference);
   Bivector pid_res = pid(0.2f, 0.0f, 0.2f, angle_err);
   Bivector torque_1 = matrix_bivector_mul(inertia, pid_res);
+  Bivector torque_2 = actuator_test(torque_1, magnetrix_flux_density);
+  Bivector rotation_angle = angle_from_torque(torque_2);
 
-  while (1) {
-  }
+  // while (1) {
+  // }
+#endif
 
   return 0;
 }
@@ -271,6 +284,9 @@ int compare_float(const void *a, const void *b) {
 }
 
 Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density) {
+#ifdef DEBUG
+  FNPRINT("\nActuator Model:\n");
+#endif
 
   // The magnetic dipole moment need to be calculated
   // torque = - mag_dipole cross mag_flux
@@ -323,15 +339,27 @@ Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density) {
       (scalers.e31 * scalers.e31),
       (scalers.e23 * scalers.e23),
   };
-
+#ifdef DEBUG
+  FNPRINT("Mag scalar before sort:\n");
+  FNPRINT("  %f, %f, %f\n", (double)scalar_list[0], (double)scalar_list[1],
+          (double)scalar_list[2]);
+#endif
   qsort(scalar_list, sizeof(scalar_list) / sizeof(scalar_list[0]),
         sizeof(scalar_list[0]), compare_float);
+#ifdef DEBUG
+  FNPRINT("Mag scalar after sort:\n");
+  FNPRINT("  %f, %f, %f\n", (double)scalar_list[0], (double)scalar_list[1],
+          (double)scalar_list[2]);
+#endif
 
   if (scalar_list[2] > 1.0f) {
+#ifdef DEBUG
+    FNPRINT("scalars are too big\n");
+#endif
     float max_scaler_sqrt = sqrtf(scalar_list[2]);
-    mag_s1 = scalers.e12 * max_scaler_sqrt;
-    mag_s2 = scalers.e31 * max_scaler_sqrt;
-    mag_s3 = scalers.e23 * max_scaler_sqrt;
+    mag_s1 = scalers.e12 / max_scaler_sqrt;
+    mag_s2 = scalers.e31 / max_scaler_sqrt;
+    mag_s3 = scalers.e23 / max_scaler_sqrt;
 
     Bivector new_mag = Bivector{
         .e12 = (mag_s1 * mag1.e12) + (mag_s2 * mag2.e12) + (mag_s3 * mag3.e12),
@@ -344,11 +372,166 @@ Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density) {
     return bivector_cross(magnetrix_flux_density, new_mag);
 
   } else {
+#ifdef DEBUG
+    FNPRINT("scalars are just fine\n");
+#endif
     mag_s1 = scalers.e12;
     mag_s2 = scalers.e31;
     mag_s3 = scalers.e23;
     return torque_scaled;
   }
+}
+
+Bivector angle_from_torque(Bivector torque) {
+
+#ifdef DEBUG
+  FNPRINT("\nGet the Rotation angle:\n");
+#endif
+  // kinematic equations
+  // theta = 0.5 * inerita^-1 torque * time^2 + angluar_vel * time + 0
+
+  Bivector angluar_acc = matrix_bivector_mul(inertia_inv, torque);
+#ifdef DEBUG
+  FNPRINT("  angluar acceleration:\n");
+  FNPRINT("  e12: %f, e31: %f, e23: %f\n", (double)angluar_acc.e12,
+          (double)angluar_acc.e31, (double)angluar_acc.e23);
+#endif
+
+  float samp_square = sampling_time * sampling_time;
+
+  Bivector rotation_angle = Bivector{
+      .e12 = (0.5f * angluar_acc.e12 * samp_square) +
+             (angluar_velocity.e12 * sampling_time),
+      .e31 = (0.5f * angluar_acc.e31 * samp_square) +
+             (angluar_velocity.e31 * sampling_time),
+      .e23 = (0.5f * angluar_acc.e23 * samp_square) +
+             (angluar_velocity.e23 * sampling_time),
+  };
+
+#ifdef DEBUG
+  FNPRINT("  rotation angle:\n");
+  FNPRINT("  e12: %f, e31: %f, e23: %f\n", (double)rotation_angle.e12,
+          (double)rotation_angle.e31, (double)rotation_angle.e23);
+#endif
+
+  return rotation_angle;
+}
+
+Vector rotate_vector(Vector vector, Bivector angle) {
+  // Plan
+  // 1. get rotor
+  // 2. rotate
+#ifdef DEBUG
+  FNPRINT("\nRotate:\n");
+#endif
+
+#ifdef DEBUG
+  FNPRINT("  rotation angle bivector:\n");
+  FNPRINT("  e12: %f, e31: %f, e23: %f\n", (double)angle.e12, (double)angle.e31,
+          (double)angle.e23);
+#endif
+
+  // spilt up the angle bivector into angle and plane
+  float rot_angle = sqrtf((angle.e12 * angle.e12) + (angle.e31 * angle.e31) +
+                          (angle.e23 * angle.e23));
+
+  // rotor is made from half the angle
+  float rot_angle_half = rot_angle / 2.0f;
+  float rotor_scalar = cosf(rot_angle_half);
+  float sin = sinf(rot_angle_half);
+  float bi_pre = sin / rot_angle;
+
+  Bivector rotor_bivector = Bivector{
+      .e12 = angle.e12 * bi_pre,
+      .e31 = angle.e31 * bi_pre,
+      .e23 = angle.e23 * bi_pre,
+  };
+
+#ifdef DEBUG
+  FNPRINT("  rotor:\n");
+  FNPRINT("  scalar: %f, e12: %f, e31: %f, e23: %f\n", (double)rotor_scalar,
+          (double)rotor_bivector.e12, (double)rotor_bivector.e31,
+          (double)rotor_bivector.e23);
+#endif
+
+#ifdef DEBUG
+  FNPRINT("  vector:\n");
+  FNPRINT("  e1: %f, e2: %f, e3: %f\n", (double)vector.e1, (double)vector.e2,
+          (double)vector.e3);
+#endif
+
+  // matrix version of the vector rotor formula
+  // \[\mathcal{R}(R) =
+  // \begin{bmatrix}
+  // r_0^{2}-r_4^{2}-r_5^{2}+r_6^{2 }& 2(r_{6}r_{5} -r_{0} r_{4} ) &
+  // 2(r_{0}r_{5} + r_{4}r_{6}) \\
+// 2(r_{0}r_{4} +r_{5}r_{6}) & r_0^{2}-r_4^{2}+r_5^{2}-r_6^{2} &
+  // 2(r_{4}r_{5}-r_{0}r_{6}) \\
+// 2(r_{4}r_{6}-r_{0}r_{5}) & 2(r_{0}r_{6}+r_{4}r_{5}) &
+  // r_0^{2}+r_4^{2}-r_5^{2}-r_6^{2} \\
+// \end{bmatrix}\]
+
+  Vector res = Vector{
+      .e1 =
+          // r_0^{2}-r_4^{2}-r_5^{2}+r_6^{2 } &
+      // 2(r_{6}r_{5} -r_{0} r_{4} ) &
+      // 2(r_{0}r_{5} + r_{4}r_{6})
+      (((rotor_scalar * rotor_scalar) -
+        (rotor_bivector.e12 * rotor_bivector.e12) -
+        (rotor_bivector.e31 * rotor_bivector.e31) +
+        (rotor_bivector.e23 * rotor_bivector.e23)) *
+       vector.e1) +
+      (2 *
+       (rotor_bivector.e23 * rotor_bivector.e31 -
+        rotor_scalar * rotor_bivector.e12) *
+       vector.e2) +
+      (2 *
+       (rotor_scalar * rotor_bivector.e31 +
+        rotor_bivector.e12 * rotor_bivector.e23) *
+       vector.e3),
+      .e2 =
+          // 2(r_{0}r_{4} + r_{5}r_{6}) &
+          // r_0^{2}-r_4^{2}+r_5^{2}-r_6^{2} &
+          // 2(r_{4}r_{5}-r_{0}r_{6})
+      (2 *
+       (rotor_scalar * rotor_bivector.e12 +
+        rotor_bivector.e31 * rotor_bivector.e23) *
+       vector.e1) +
+      (((rotor_scalar * rotor_scalar) -
+        (rotor_bivector.e12 * rotor_bivector.e12) +
+        (rotor_bivector.e31 * rotor_bivector.e31) -
+        (rotor_bivector.e23 * rotor_bivector.e23)) *
+       vector.e2) +
+      (2 *
+       (rotor_bivector.e12 * rotor_bivector.e31 -
+        rotor_scalar * rotor_bivector.e23) *
+       vector.e3),
+      .e3 =
+          // 2(r_{4}r_{6}-r_{0}r_{5}) &
+          // 2(r_{0}r_{6}+r_{4}r_{5}) &
+          // r_0^{2}+r_4^{2}-r_5^{2}-r_6^{2}
+      (2 *
+       (rotor_bivector.e12 * rotor_bivector.e23 -
+        rotor_scalar * rotor_bivector.e31) *
+       vector.e1) +
+      (2 *
+       (rotor_scalar * rotor_bivector.e23 +
+        rotor_bivector.e12 * rotor_bivector.e31) *
+       vector.e2) +
+      (((rotor_scalar * rotor_scalar) +
+        (rotor_bivector.e12 * rotor_bivector.e12) -
+        (rotor_bivector.e31 * rotor_bivector.e31) -
+        (rotor_bivector.e23 * rotor_bivector.e23)) *
+       vector.e3),
+  };
+
+#ifdef DEBUG
+  FNPRINT("  rotated vector:\n");
+  FNPRINT("  e1: %f, e2: %f, e3: %f\n", (double)res.e1, (double)res.e2,
+          (double)res.e3);
+#endif
+
+  return res;
 }
 
 void test() {
@@ -397,4 +580,30 @@ void test() {
   // -1.0000   0.3333        0
   //  3.0000   0.6667  -1.0000
   a.m11 = 1.0f; // do something with the matrix
+
+  printf("Float Sort fn\n");
+  float test_float_list[] = {2.3f, 1.2f, -0.2f};
+  printf("  Before sort:\n");
+  printf("  %f, %f, %f\n", (double)test_float_list[0],
+         (double)test_float_list[1], (double)test_float_list[2]);
+
+  qsort(test_float_list, sizeof(test_float_list) / sizeof(test_float_list[0]),
+        sizeof(test_float_list[0]), compare_float);
+  printf("  After sort:\n");
+  printf("  %f, %f, %f\n", (double)test_float_list[0],
+         (double)test_float_list[1], (double)test_float_list[2]);
+
+  printf("\nTest rotation function:\n");
+
+  float angle = 6.28318548f / 4.0f;
+  float bi_norm = sqrtf((0.5f * 0.5f) + (5.2f * 5.2f) + (-3.0f) * (-3.0f));
+  float pre = angle / bi_norm;
+  Bivector angle_bivector = Bivector{0.5f * pre, 5.2f * pre, -3.0f * pre};
+  Vector vector = Vector{6.4f, -4.5f, 3.3f};
+  Vector res = rotate_vector(vector, angle_bivector);
+
+  printf("  This is the solution:\n");
+  printf("  %f, %f, %f\n", 6.6072783, -3.6931403, -3.847674);
+
+  res.e1 = 0.0f;
 }
