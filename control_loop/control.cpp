@@ -12,17 +12,19 @@
 float sampling_time = 0.200f; // seconds
 
 // pid
-float last_int_e12 = 0; // The last derivetive variable
-float last_int_e31 = 0; // The last derivetive variable
-float last_int_e23 = 0; // The last derivetive variable
+float last_int_e12 = 0.0f; // The last derivetive variable
+float last_int_e31 = 0.0f; // The last derivetive variable
+float last_int_e23 = 0.0f; // The last derivetive variable
 
-float last_err_e12 = 0; // The last derivetive variable
-float last_err_e31 = 0; // The last derivetive variable
-float last_err_e23 = 0; // The last derivetive variable
+float last_err_e12 = 0.0f; // The last derivetive variable
+float last_err_e31 = 0.0f; // The last derivetive variable
+float last_err_e23 = 0.0f; // The last derivetive variable
 
 // inertia matrix
+// This is modelled as a plate
+// 1/12 * m * (a^2 + b^2)
 Matrix3x3 inertia{
-    .m11 = 1.0f,
+    .m11 = 1.0f / 6.0f * 0.01f * 0.01f, // kilogram * meter^2
     .m12 = 0.0f,
     .m13 = 0.0f,
 
@@ -37,13 +39,13 @@ Matrix3x3 inertia{
 Matrix3x3 inertia_inv = matrix_inv(inertia);
 
 // Magnetorquers
-float magnetorquer_dipole = 4; // ampere meter^2
+float magnetorquer_dipole = 0.1458f; // ampere meter^2
 float mag_s1 = 0.0f;
 float mag_s2 = 0.0f;
 float mag_s3 = 0.0f;
 Bivector mag1 = Bivector{
     // This does not exist
-    .e12 = magnetorquer_dipole,
+    .e12 = 1.0f,
     .e31 = 0.0f,
     .e23 = 0.0f,
 };
@@ -60,14 +62,14 @@ Bivector mag3 = Bivector{
 
 // Magnetic Flux Density
 Bivector magnetrix_flux_density{
-    .e12 = 0.0f,  // tesla
-    .e31 = 0.02f, // tesla
-    .e23 = 0.2f,  // tesla
+    .e12 = 0.0f,     // tesla
+    .e31 = 0.0f,     // tesla
+    .e23 = 0.00002f, // 20 * 10^(-6) tesla
 };
 
 // angluar velocity
 Bivector angluar_velocity{
-    .e12 = 0.5f, // radian / second
+    .e12 = 0.0f, // radian / second
     .e31 = 0.0f, // radian / second
     .e23 = 0.0f, // radian / second
 };
@@ -93,19 +95,49 @@ int main() {
 
 #ifdef TEST
   test();
-#else // do not run the program when testing
-  Vector reference = Vector{1, 0, 0};
-  Vector current = Vector{0, 1, 0};
+  return 0;
+#endif // do not run the program when testing
 
-  Bivector angle_err = angle_err_bivector(current, reference);
-  Bivector pid_res = pid(0.2f, 0.0f, 0.2f, angle_err);
-  Bivector torque_1 = matrix_bivector_mul(inertia, pid_res);
-  Bivector torque_2 = actuator_test(torque_1, magnetrix_flux_density);
-  Bivector rotation_angle = angle_from_torque(torque_2);
+  Vector reference = Vector{0, 1, 0};
+  Vector current = Vector{1, 0, 0};
 
-  // while (1) {
-  // }
+  for (int i = 0; i < 530; i++) {
+
+    printf("\nIteration: %d \n", i);
+    printf("Current Vector:");
+    printf("%fe1, %fe2, %fe3 \n", (double)current.e1, (double)current.e2,
+           (double)current.e3);
+
+    Bivector angle_err = angle_err_bivector(current, reference);
+
+    printf("Angle Error: ");
+    printf("%fe12, %fe31, %fe23, ", (double)angle_err.e12,
+           (double)angle_err.e31, (double)angle_err.e23);
+    printf("norm: %f\n\n", (double)sqrtf(angle_err.e12 * angle_err.e12 +
+                                         angle_err.e31 * angle_err.e31 +
+                                         angle_err.e23 * angle_err.e23));
+
+    Bivector pid_res = pid(1.5f, 0.0f, 0.3f, angle_err);
+    Bivector torque_1 = matrix_bivector_mul(inertia, pid_res);
+#ifdef DEBUG
+    printf("Torque Before Actuator: ");
+    printf("%fe12, %fe31, %fe23, ", (double)torque_1.e12, (double)torque_1.e31,
+           (double)torque_1.e23);
 #endif
+
+    Bivector torque_2 =
+        actuator_test(torque_1, magnetrix_flux_density); // TODO something wrong
+
+#ifdef DEBUG
+    printf("Torque After actuator: ");
+    printf("%fe12, %fe31, %fe23, ", (double)torque_2.e12, (double)torque_2.e31,
+           (double)torque_2.e23);
+#endif
+
+    Bivector rotation_angle = angle_from_torque(torque_2);
+    // Bivector rotation_angle = angle_from_torque(torque_1);
+    current = rotate_vector(current, rotation_angle);
+  }
 
   return 0;
 }
@@ -115,14 +147,14 @@ Bivector angle_err_bivector(Vector current, Vector reference) {
   // Find the angle error bivector betweem the current vector and refernce
   // $$ \overset\Rightarrow{\theta}_\text{err} =
   // \frac{\vec{y}\wedge \vec{r}}{|\vec{y}\wedge \vec{r}|}
-  // \arccos \left( \frac{|\vec{y}\cdot \vec{r}|}{|\vec{y}| |\vec{r}|}  \right)
+  // \arccos \left( \frac{|\vec{y}\cdot \vec{r}|}{|\vec{y}| |\vec{r}|} \right)
   // $$
 
   // There are three cases
-  // 1 They are parallel and the same direction. There the error angle is 0 with
-  // no plane 2 They are anti parallet in the opesite direction. The error angle
-  // is pi with no plane ( give a plane) 3 anything in between. Has both plane
-  // and error
+  // 1 They are parallel and the same direction. There the error angle is 0
+  // with no plane 2 They are anti parallet in the opesite direction. The
+  // error angle is pi with no plane ( give a plane) 3 anything in between.
+  // Has both plane and error
 
   // $$ \vec{y}\cdot \vec{r} $$
   float inner_product = (current.e1 * reference.e1)   //
@@ -205,6 +237,13 @@ Bivector angle_err_bivector(Vector current, Vector reference) {
 
 Bivector pid(float K_p, float K_i, float K_d, Bivector error) {
 
+#ifdef DEBUG
+  printf("pid consts:");
+  printf(" k_p: %f", (double)K_p);
+  printf(" k_i: %f", (double)K_i);
+  printf(" k_d: %f\n", (double)K_d);
+#endif
+
   // The PID controller is three part
   //
   // P is propertional
@@ -234,9 +273,9 @@ Bivector pid(float K_p, float K_i, float K_d, Bivector error) {
   last_int_e12 =
       last_int_e12 + ((error.e12 + last_err_e12) / 2 * sampling_time);
   last_int_e31 =
-      last_int_e31 + ((error.e31 + last_err_e12) / 2 * sampling_time);
+      last_int_e31 + ((error.e31 + last_err_e31) / 2 * sampling_time);
   last_int_e23 =
-      last_int_e23 + ((error.e23 + last_err_e12) / 2 * sampling_time);
+      last_int_e23 + ((error.e23 + last_err_e23) / 2 * sampling_time);
 
   struct Bivector i = Bivector{
       K_i * last_int_e12,
@@ -246,15 +285,29 @@ Bivector pid(float K_p, float K_i, float K_d, Bivector error) {
 
   // To calculate this remember
   // rise over run
-  float delta_err_e12 = last_err_e12 - error.e12;
-  float delta_err_e31 = last_err_e31 - error.e31;
-  float delta_err_e23 = last_err_e23 - error.e23;
+  float delta_err_e12 = error.e12 - last_err_e12;
+  float delta_err_e31 = error.e31 - last_err_e31;
+  float delta_err_e23 = error.e23 - last_err_e23;
+
+#ifdef DEBUG
+  printf("delta error:\n");
+  printf("  e12: %f\n", (double)delta_err_e12);
+  printf("  e31: %f\n", (double)delta_err_e31);
+  printf("  e23: %f\n", (double)delta_err_e23);
+#endif
 
   struct Bivector d = Bivector{
-      K_d * delta_err_e12 / sampling_time,
-      K_d * delta_err_e31 / sampling_time,
-      K_d * delta_err_e23 / sampling_time,
+      (K_d * delta_err_e12) / sampling_time,
+      (K_d * delta_err_e31) / sampling_time,
+      (K_d * delta_err_e23) / sampling_time,
   };
+
+#ifdef DEBUG
+  printf("pid d-part:\n");
+  printf("  e12: %f\n", (double)d.e12);
+  printf("  e31: %f\n", (double)d.e31);
+  printf("  e23: %f\n", (double)d.e23);
+#endif
 
   // reset last error
   last_err_e12 = error.e12;
@@ -262,7 +315,7 @@ Bivector pid(float K_p, float K_i, float K_d, Bivector error) {
   last_err_e23 = error.e23;
 
   struct Bivector result = Bivector{
-      p.e12 + i.e31 + d.e31,
+      p.e12 + i.e12 + d.e12,
       p.e31 + i.e31 + d.e31,
       p.e23 + i.e23 + d.e23,
   };
@@ -292,10 +345,10 @@ Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density) {
   // torque = - mag_dipole cross mag_flux
   //
   // There infinetly many corrent magnetic dipole moment.
-  // The magnetic dipole moment and magnetic flux density are always orthogonal
-  // Then there is only one.
+  // The magnetic dipole moment and magnetic flux density are always
+  // orthogonal Then there is only one.
   //
-  // mag_dipole = - mag_flux cross torque / |mag_flux|^2
+  // mag_dipole = mag_flux cross torque / |mag_flux|^2
 
   // $$A A^\dag$$
   float mag_flux_norm_square =
@@ -311,6 +364,8 @@ Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density) {
 
   // The negation can be removed by switching the places
   Bivector mag_dipole = bivector_cross(torque_scaled, magnetrix_flux_density);
+  // Bivector mag_dipole = bivector_cross(torque_scaled,
+  // magnetrix_flux_density);
 
   Matrix3x3 mag_dipol_matrix = Matrix3x3{
       .m11 = mag1.e12,
@@ -378,7 +433,7 @@ Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density) {
     mag_s1 = scalers.e12;
     mag_s2 = scalers.e31;
     mag_s3 = scalers.e23;
-    return torque_scaled;
+    return torque;
   }
 }
 
@@ -396,6 +451,11 @@ Bivector angle_from_torque(Bivector torque) {
   FNPRINT("  e12: %f, e31: %f, e23: %f\n", (double)angluar_acc.e12,
           (double)angluar_acc.e31, (double)angluar_acc.e23);
 #endif
+
+  // ang_vel = ang_acc * delta_time + ang_vel_0
+  angluar_acc.e12 = angluar_acc.e12 * sampling_time + angluar_acc.e12;
+  angluar_acc.e31 = angluar_acc.e31 * sampling_time + angluar_acc.e31;
+  angluar_acc.e23 = angluar_acc.e23 * sampling_time + angluar_acc.e23;
 
   float samp_square = sampling_time * sampling_time;
 
@@ -439,6 +499,13 @@ Vector rotate_vector(Vector vector, Bivector angle) {
   float rot_angle_half = rot_angle / 2.0f;
   float rotor_scalar = cosf(rot_angle_half);
   float sin = sinf(rot_angle_half);
+
+  if (rot_angle >= -0.0000000001f &&
+      rot_angle <= 0.0000000001f) { // should not rotate
+
+    return vector;
+  }
+
   float bi_pre = sin / rot_angle;
 
   Bivector rotor_bivector = Bivector{

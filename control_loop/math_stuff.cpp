@@ -36,7 +36,7 @@ Matrix3x3 matrix_inv(Matrix3x3 matrix) {
   float determinate =
       matrix.m11 * m11_det - matrix.m12 * m12_det + matrix.m13 * m13_det;
 
-  if (determinate >= 0.00f && determinate <= 0.01f) {
+  if (determinate >= 0.00f && determinate <= 0.00001f) {
     exit(1);
   }
   float scalar = 1 / determinate;
