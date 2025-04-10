@@ -5,6 +5,8 @@
 
 #define SDA 18 // Signal Data Line pin
 #define SCL 17 // Signal Clock Line pin
+void debug_print(void);
+
 
 void setup() {
 Serial.begin(115200);
@@ -12,11 +14,21 @@ while (!Serial){};
 
 Wire.begin(SDA, SCL);
 Wire.setClock(ClockSpeed);
-set_bit_config(MPU9255_ADDRESS, PWR_MGMT_1, true, 7);
-Magnometer_Bypass(true);
 delay(2000);
+
+hard_reset_MPU9255(); // Hard reset the MPU9255
+delay(1000);
+magnometer_bypass(true);
+delay(2000);
+
 I2Cbus_SCCAN();
-measuremode_config_togle(true);
+delay(5000);
+
+magnotometer_softreset(); // Soft reset the magnetometer
+delay(2000);
+
+resolution_config(FULL); // Set the measure mode to half
+
 }
 
 Vector gyro_data;
@@ -28,6 +40,9 @@ uint8_t data_byte;
 void loop() {  // testing the magnometer
   read(AK8963_ADDRESS, CNTL1, &data_byte, 1);
   Serial.print("CNTL1 : ");
+  Serial.println(data_byte, BIN);
+  read(AK8963_ADDRESS, CNTL2, &data_byte, 1);
+  Serial.print("CNTL2 : ");
   Serial.println(data_byte, BIN);
   read(AK8963_ADDRESS, ASTC, &data_byte, 1);
   Serial.print("ASTC : ");
@@ -53,4 +68,19 @@ void loop() {  // testing the magnometer
   Serial.println();
   delay(1000);
 }
+
+
+
+void debug_print(void){
+  read(AK8963_ADDRESS, CNTL1, &data_byte, 1);
+  Serial.print("CNTL1 : ");
+  Serial.println(data_byte, BIN);
+  read(AK8963_ADDRESS, CNTL2, &data_byte, 1);
+  Serial.print("CNTL2 : ");
+  Serial.println(data_byte, BIN);
+  read(AK8963_ADDRESS, ASTC, &data_byte, 1);
+  Serial.print("ASTC : ");
+  Serial.println(data_byte, BIN);
+}
+
 
