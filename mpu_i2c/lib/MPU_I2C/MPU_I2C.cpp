@@ -4,20 +4,29 @@
 #include <MPU_ADDRESS.hpp>
 #include <AK8963_ADDRESS.hpp>
 
+
+
+/* @brief This function is used to hard reset the MPU9255
+** @note Resets the internal registers and restores the default settings.
+*/
+void hard_reset_MPU9255(void)
+{
+  set_bit_config(MPU9255_ADDRESS, PWR_MGMT_1, true, 7);
+}
+
 /* @brief This function is used to enable or disable the bypass mode of the magnometer
 ** @param state: true to enable the bypass mode, false to disable the bypass mode
 */
-void Magnometer_Bypass(bool state)
+void magnometer_bypass(bool state)
 {
   set_bit_config(MPU9255_ADDRESS, Bypass_Enable_Config_add, state, 1);
 }
 
 /* @brief This function is used to configure the measure mode of the magnometer
-** @param mode: true sets measure mode 2, false sets measure mode 1
+** @param mode: Full sets measure mode 2, Half sets measure mode 1
 ** @note This function standart is 16bit resolution
 */
-void measuremode_config_togle(bool mode){
-  write(AK8963_ADDRESS, CNTL1, B00010110);
+void resolution_config(resolution mode){
   mode ? write(AK8963_ADDRESS, CNTL1, B00010110) : write(AK8963_ADDRESS, ASTC, B00010010);
 }
 
@@ -30,8 +39,8 @@ void measuremode_config_togle(bool mode){
 void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t bit_pos){
   Wire.beginTransmission(unit_addr);
     Wire.write(local_addr);
-  Wire.endTransmission(false);
-    Wire.requestFrom(local_addr, 1, false);
+  Wire.endTransmission(true);
+    Wire.requestFrom((uint16_t)unit_addr, (size_t)BYTE);
     uint8_t ConfigByte = Wire.read();
     ConfigByte = (state = true) ? (ConfigByte | (1 << bit_pos)) : (ConfigByte & ~(1 << bit_pos));
     Wire.write(ConfigByte);
@@ -48,7 +57,7 @@ void read(uint8_t unit_addr, uint8_t local_addr, uint8_t data[], uint8_t size)
 {
   Wire.beginTransmission(unit_addr);
   Wire.write(local_addr);
-  Wire.endTransmission(false);
+  Wire.endTransmission(true);
   Wire.requestFrom(unit_addr, size);
   for (uint8_t i = 0; i < size; i++)
   {
@@ -129,4 +138,14 @@ void I2Cbus_SCCAN(void){
   }
   Serial.println(">>>Scanning I2C bus complete<<<");
 }
+/* @brief This function is used to set the AK8963 to self-test mode
+*/
+void magnotometer_selftest(void){
+write(AK8963_ADDRESS, CNTL1, B00011000);
+}
 
+/* @brief This function is used to soft reset the AK8963
+*/
+void magnotometer_softreset(void){
+  set_bit_config(AK8963_ADDRESS, CNTL2, true, 0); // Soft reset the AK8963
+}

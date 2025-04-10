@@ -7,8 +7,9 @@
 #define MPU_I2C_HPP
 #endif
 
-#define MPU9255_ADDRESS 0x68 // Device address when ADO = 0
-// #define MPU9255_ADDRESS 0x69 // Device address when ADO = 1
+#define BYTE 1
+#define MPU9255_ADDRESS 0x68 // Device address when AD0 = 0
+// #define MPU9255_ADDRESS 0x69 // Device address when AD0 = 1
 #define AK8963_ADDRESS 0x0C //  Address of magnetometer
 
 
@@ -25,10 +26,18 @@ typedef struct {
     double z;
 } Vector;
 
+typedef enum RESOLUTION {
+    HALF = 0,
+    FULL = 1
+}resolution;
+
+void magnotometer_selftest(void);
+void magnotometer_softreset(void);
+void hard_reset_MPU9255(void);
 void I2Cbus_SCCAN(void);
-void measuremode_config_togle(bool mode);
+void resolution_config(resolution mode);
 void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t bit_pos);
-void Magnometer_Bypass(bool state);
+void magnometer_bypass(bool state);
 void read(uint8_t unit_addr, uint8_t local_addr, uint8_t *data, uint8_t size);
 void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte);
 void read_gryroscope(Vector *gyro_data);

@@ -11,6 +11,7 @@
 #define MAGNO_ZOUT_H 0x08
 #define ST2 0x09
 #define CNTL1 0x0A
+#define CNTL2 0x0B
 #define ASTC 0x0C
 #define ASAX 0x10
 #define ASAY 0x11
