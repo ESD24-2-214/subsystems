@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Wire.h>
+#include <I2C.hpp>
 #include <MPU_I2C.hpp>
 #include <MPU_ADDRESS.hpp>
 #include <AK8963_ADDRESS.hpp>
@@ -40,7 +40,7 @@ void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t 
   Wire.beginTransmission(unit_addr);
     Wire.write(local_addr);
   Wire.endTransmission(true);
-    Wire.requestFrom((uint16_t)unit_addr, (size_t)BYTE);
+    Wire.requestFrom((uint16_t)unit_addr, (size_t)BYTE, false);
     uint8_t ConfigByte = Wire.read();
     ConfigByte = (state = true) ? (ConfigByte | (1 << bit_pos)) : (ConfigByte & ~(1 << bit_pos));
     Wire.write(ConfigByte);
@@ -58,7 +58,7 @@ void read(uint8_t unit_addr, uint8_t local_addr, uint8_t data[], uint8_t size)
   Wire.beginTransmission(unit_addr);
   Wire.write(local_addr);
   Wire.endTransmission(true);
-  Wire.requestFrom(unit_addr, size);
+  Wire.requestFrom(unit_addr, size, false);
   for (uint8_t i = 0; i < size; i++)
   {
     data[i] = Wire.read();

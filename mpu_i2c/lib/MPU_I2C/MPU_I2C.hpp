@@ -5,7 +5,7 @@
 
 #ifndef MPU_I2C_HPP
 #define MPU_I2C_HPP
-#endif
+
 
 #define BYTE 1
 #define MPU9255_ADDRESS 0x68 // Device address when AD0 = 0
@@ -43,3 +43,5 @@ void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte);
 void read_gryroscope(Vector *gyro_data);
 void read_accelerometer(Vector *acc_data);
 void read_magnetometer(Vector *mag_data);
+
+#endif
