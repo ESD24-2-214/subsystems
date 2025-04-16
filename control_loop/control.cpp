@@ -1,6 +1,8 @@
 #include "math_stuff.hpp"
 #include <cmath>
 #include <cstdio>
+#include <fstream>
+#include <iostream>
 #include <stdlib.h>
 
 // Macros
@@ -9,7 +11,7 @@
   printf(__VA_ARGS__)
 
 // Global Variables
-float sampling_time = 0.200f; // seconds
+float sampling_time = 0.100f; // seconds
 
 // pid
 float last_int_e12 = 0.0f; // The last derivetive variable
@@ -75,11 +77,9 @@ Bivector angluar_velocity{
 };
 
 // Functions
-Bivector angle_err_bivector(Vector current, Vector reference);
 Bivector pid(float K_p, float K_i, float K_d, Bivector error);
 Bivector actuator_test(Bivector torque, Bivector magnetrix_flux_density);
 Bivector angle_from_torque(Bivector torque);
-Vector rotate_vector(Vector vector, Bivector angle);
 
 void test();
 
@@ -98,26 +98,51 @@ int main() {
   return 0;
 #endif // do not run the program when testing
 
+  // Write date to csv file
+  std::ofstream file("angle_err_over_time.csv");
+
+  if (!file.is_open()) {
+    std::cerr << "Failed to open file!" << std::endl;
+    return 1;
+  }
+
+  file << "Time, Angle Error Norm\n";
+
   Vector reference = Vector{0, 1, 0};
   Vector current = Vector{1, 0, 0};
 
-  for (int i = 0; i < 530; i++) {
+  float time = 15.0f; // second
 
-    printf("\nIteration: %d \n", i);
+#ifdef DEBUG
+  int samples = 2;
+#else
+  int samples = (int)(time / sampling_time);
+#endif
+
+  for (int i = 0; i < samples; i++) {
+
+    float time = (float)i * sampling_time;
+    printf("\nIteration: %d, Time: %f \n", i, (double)time);
     printf("Current Vector:");
     printf("%fe1, %fe2, %fe3 \n", (double)current.e1, (double)current.e2,
            (double)current.e3);
 
-    Bivector angle_err = angle_err_bivector(current, reference);
+    Bivector angle_err = angle_difference_bivector(current, reference);
 
     printf("Angle Error: ");
     printf("%fe12, %fe31, %fe23, ", (double)angle_err.e12,
            (double)angle_err.e31, (double)angle_err.e23);
-    printf("norm: %f\n\n", (double)sqrtf(angle_err.e12 * angle_err.e12 +
-                                         angle_err.e31 * angle_err.e31 +
-                                         angle_err.e23 * angle_err.e23));
+    float norm =
+        sqrtf(angle_err.e12 * angle_err.e12 + angle_err.e31 * angle_err.e31 +
+              angle_err.e23 * angle_err.e23);
+    printf("norm: %f\n\n", (double)norm);
 
-    Bivector pid_res = pid(1.5f, 0.0f, 0.3f, angle_err);
+    file << time;
+    file << ", ";
+    file << norm;
+    file << "\n";
+
+    Bivector pid_res = pid(0.4f, 0.0f, 1.0f, angle_err);
     Bivector torque_1 = matrix_bivector_mul(inertia, pid_res);
 #ifdef DEBUG
     printf("Torque Before Actuator: ");
@@ -136,103 +161,15 @@ int main() {
 
     Bivector rotation_angle = angle_from_torque(torque_2);
     // Bivector rotation_angle = angle_from_torque(torque_1);
-    current = rotate_vector(current, rotation_angle);
+    Rotor rotor =
+        rotor_form_halv_angle_bivector(scale_bivector(rotation_angle, 0.5));
+    current = rotate_vector(current, rotor);
   }
+
+  file.close();
+  std::cout << "CSV file created successfully." << std::endl;
 
   return 0;
-}
-
-Bivector angle_err_bivector(Vector current, Vector reference) {
-
-  // Find the angle error bivector betweem the current vector and refernce
-  // $$ \overset\Rightarrow{\theta}_\text{err} =
-  // \frac{\vec{y}\wedge \vec{r}}{|\vec{y}\wedge \vec{r}|}
-  // \arccos \left( \frac{|\vec{y}\cdot \vec{r}|}{|\vec{y}| |\vec{r}|} \right)
-  // $$
-
-  // There are three cases
-  // 1 They are parallel and the same direction. There the error angle is 0
-  // with no plane 2 They are anti parallet in the opesite direction. The
-  // error angle is pi with no plane ( give a plane) 3 anything in between.
-  // Has both plane and error
-
-  // $$ \vec{y}\cdot \vec{r} $$
-  float inner_product = (current.e1 * reference.e1)   //
-                        + (current.e2 * reference.e2) //
-                        + (current.e3 * reference.e3);
-
-  // Norm of inner product
-  // $$A A^{\dag}$$
-  float current_norm = sqrtf(float((current.e1 * current.e1)   //
-                                   + (current.e2 * current.e2) //
-                                   + (current.e3 * current.e3)));
-  float reference_norm = sqrtf(float((reference.e1 * reference.e1)   //
-                                     + (reference.e2 * reference.e2) //
-                                     + (reference.e3 * reference.e3)));
-  float inner_norm = inner_product / (current_norm * reference_norm);
-
-#ifdef DEBUG
-  FNPRINT("inner norm: %f\n", (double)inner_norm);
-#endif
-
-  // if (inner_product > 0.90000000f) { // parallel
-  if (inner_norm >= 1.00f && inner_norm <= 1.01f) { // parallel
-#ifdef DEBUG
-    FNPRINT("parallel path\n");
-#endif
-    FNPRINT("inner norm: %f\n", (double)inner_norm);
-
-    return Bivector{0.0, 0.0, 0.0};
-  } else if (inner_norm >= -1.01f && inner_norm <= -1.0f) { // anti
-                                                            // parallel
-#ifdef DEBUG
-    FNPRINT("anti parallel path\n");
-#endif
-
-    return Bivector{3.14159274f, 0.0, 0.0};
-  } else { // everything else
-#ifdef DEBUG
-    FNPRINT("general path\n");
-#endif
-
-    // $$ \vec{y}\wedge \vec{r} $$
-    Bivector plane = {
-        .e12 = current.e1 * reference.e2 - current.e2 * reference.e1,
-        .e31 = current.e3 * reference.e1 - current.e1 * reference.e3,
-        .e23 = current.e2 * reference.e3 - current.e3 * reference.e2,
-    };
-
-    // Norm of exterior product
-    // $$A A^{\dag}$$
-    float plane_area = sqrtf(float((plane.e12 * plane.e12)   //
-                                   + (plane.e31 * plane.e31) //
-                                   + (plane.e23 * plane.e23)));
-
-    // $$\arccos\left(\frac{|\vec{y}\cdot\vec{r}|}{|\vec{y}||\vec{r}|}\right)$$
-    float angle_scalar = acosf(float(inner_norm));
-
-#ifdef DEBUG
-    FNPRINT("angle scalar: %f, degree: %f\n", (double)angle_scalar,
-            (double)(angle_scalar * 180.0f / 3.14159274f));
-#endif
-
-    // scales plane area to 1 and set the angle
-    float scalar = angle_scalar / plane_area;
-
-    Bivector angle = Bivector{
-        plane.e12 * scalar,
-        plane.e31 * scalar,
-        plane.e23 * scalar,
-    };
-
-#ifdef DEBUG
-    FNPRINT("angle err\n");
-    printf("  e12: %f\n", (double)angle.e12);
-    printf("  e31: %f\n", (double)angle.e31);
-    printf("  e23: %f\n", (double)angle.e23);
-#endif
-    return angle;
-  }
 }
 
 Bivector pid(float K_p, float K_i, float K_d, Bivector error) {
@@ -453,11 +390,26 @@ Bivector angle_from_torque(Bivector torque) {
 #endif
 
   // ang_vel = ang_acc * delta_time + ang_vel_0
-  angluar_acc.e12 = angluar_acc.e12 * sampling_time + angluar_acc.e12;
-  angluar_acc.e31 = angluar_acc.e31 * sampling_time + angluar_acc.e31;
-  angluar_acc.e23 = angluar_acc.e23 * sampling_time + angluar_acc.e23;
+  angluar_velocity.e12 = angluar_acc.e12 * sampling_time + angluar_velocity.e12;
+  angluar_velocity.e31 = angluar_acc.e31 * sampling_time + angluar_velocity.e31;
+  angluar_velocity.e23 = angluar_acc.e23 * sampling_time + angluar_velocity.e23;
+
+  // i did
+  // angluar_acc.e12 = angluar_acc.e12 * sampling_time + angluar_acc.e12;
+  // angluar_acc.e31 = angluar_acc.e31 * sampling_time + angluar_acc.e31;
+  // angluar_acc.e23 = angluar_acc.e23 * sampling_time + angluar_acc.e23;
+
+#ifdef DEBUG
+  FNPRINT("  angluar velocity:\n");
+  FNPRINT("  e12: %f, e31: %f, e23: %f\n", (double)angluar_velocity.e12,
+          (double)angluar_velocity.e31, (double)angluar_velocity.e23);
+#endif
 
   float samp_square = sampling_time * sampling_time;
+
+#ifdef DEBUG
+  FNPRINT("  Sample time squared: %f", (double)samp_square);
+#endif
 
   Bivector rotation_angle = Bivector{
       .e12 = (0.5f * angluar_acc.e12 * samp_square) +
@@ -477,137 +429,13 @@ Bivector angle_from_torque(Bivector torque) {
   return rotation_angle;
 }
 
-Vector rotate_vector(Vector vector, Bivector angle) {
-  // Plan
-  // 1. get rotor
-  // 2. rotate
-#ifdef DEBUG
-  FNPRINT("\nRotate:\n");
-#endif
-
-#ifdef DEBUG
-  FNPRINT("  rotation angle bivector:\n");
-  FNPRINT("  e12: %f, e31: %f, e23: %f\n", (double)angle.e12, (double)angle.e31,
-          (double)angle.e23);
-#endif
-
-  // spilt up the angle bivector into angle and plane
-  float rot_angle = sqrtf((angle.e12 * angle.e12) + (angle.e31 * angle.e31) +
-                          (angle.e23 * angle.e23));
-
-  // rotor is made from half the angle
-  float rot_angle_half = rot_angle / 2.0f;
-  float rotor_scalar = cosf(rot_angle_half);
-  float sin = sinf(rot_angle_half);
-
-  if (rot_angle >= -0.0000000001f &&
-      rot_angle <= 0.0000000001f) { // should not rotate
-
-    return vector;
-  }
-
-  float bi_pre = sin / rot_angle;
-
-  Bivector rotor_bivector = Bivector{
-      .e12 = angle.e12 * bi_pre,
-      .e31 = angle.e31 * bi_pre,
-      .e23 = angle.e23 * bi_pre,
-  };
-
-#ifdef DEBUG
-  FNPRINT("  rotor:\n");
-  FNPRINT("  scalar: %f, e12: %f, e31: %f, e23: %f\n", (double)rotor_scalar,
-          (double)rotor_bivector.e12, (double)rotor_bivector.e31,
-          (double)rotor_bivector.e23);
-#endif
-
-#ifdef DEBUG
-  FNPRINT("  vector:\n");
-  FNPRINT("  e1: %f, e2: %f, e3: %f\n", (double)vector.e1, (double)vector.e2,
-          (double)vector.e3);
-#endif
-
-  // matrix version of the vector rotor formula
-  // \[\mathcal{R}(R) =
-  // \begin{bmatrix}
-  // r_0^{2}-r_4^{2}-r_5^{2}+r_6^{2 }& 2(r_{6}r_{5} -r_{0} r_{4} ) &
-  // 2(r_{0}r_{5} + r_{4}r_{6}) \\
-// 2(r_{0}r_{4} +r_{5}r_{6}) & r_0^{2}-r_4^{2}+r_5^{2}-r_6^{2} &
-  // 2(r_{4}r_{5}-r_{0}r_{6}) \\
-// 2(r_{4}r_{6}-r_{0}r_{5}) & 2(r_{0}r_{6}+r_{4}r_{5}) &
-  // r_0^{2}+r_4^{2}-r_5^{2}-r_6^{2} \\
-// \end{bmatrix}\]
-
-  Vector res = Vector{
-      .e1 =
-          // r_0^{2}-r_4^{2}-r_5^{2}+r_6^{2 } &
-      // 2(r_{6}r_{5} -r_{0} r_{4} ) &
-      // 2(r_{0}r_{5} + r_{4}r_{6})
-      (((rotor_scalar * rotor_scalar) -
-        (rotor_bivector.e12 * rotor_bivector.e12) -
-        (rotor_bivector.e31 * rotor_bivector.e31) +
-        (rotor_bivector.e23 * rotor_bivector.e23)) *
-       vector.e1) +
-      (2 *
-       (rotor_bivector.e23 * rotor_bivector.e31 -
-        rotor_scalar * rotor_bivector.e12) *
-       vector.e2) +
-      (2 *
-       (rotor_scalar * rotor_bivector.e31 +
-        rotor_bivector.e12 * rotor_bivector.e23) *
-       vector.e3),
-      .e2 =
-          // 2(r_{0}r_{4} + r_{5}r_{6}) &
-          // r_0^{2}-r_4^{2}+r_5^{2}-r_6^{2} &
-          // 2(r_{4}r_{5}-r_{0}r_{6})
-      (2 *
-       (rotor_scalar * rotor_bivector.e12 +
-        rotor_bivector.e31 * rotor_bivector.e23) *
-       vector.e1) +
-      (((rotor_scalar * rotor_scalar) -
-        (rotor_bivector.e12 * rotor_bivector.e12) +
-        (rotor_bivector.e31 * rotor_bivector.e31) -
-        (rotor_bivector.e23 * rotor_bivector.e23)) *
-       vector.e2) +
-      (2 *
-       (rotor_bivector.e12 * rotor_bivector.e31 -
-        rotor_scalar * rotor_bivector.e23) *
-       vector.e3),
-      .e3 =
-          // 2(r_{4}r_{6}-r_{0}r_{5}) &
-          // 2(r_{0}r_{6}+r_{4}r_{5}) &
-          // r_0^{2}+r_4^{2}-r_5^{2}-r_6^{2}
-      (2 *
-       (rotor_bivector.e12 * rotor_bivector.e23 -
-        rotor_scalar * rotor_bivector.e31) *
-       vector.e1) +
-      (2 *
-       (rotor_scalar * rotor_bivector.e23 +
-        rotor_bivector.e12 * rotor_bivector.e31) *
-       vector.e2) +
-      (((rotor_scalar * rotor_scalar) +
-        (rotor_bivector.e12 * rotor_bivector.e12) -
-        (rotor_bivector.e31 * rotor_bivector.e31) -
-        (rotor_bivector.e23 * rotor_bivector.e23)) *
-       vector.e3),
-  };
-
-#ifdef DEBUG
-  FNPRINT("  rotated vector:\n");
-  FNPRINT("  e1: %f, e2: %f, e3: %f\n", (double)res.e1, (double)res.e2,
-          (double)res.e3);
-#endif
-
-  return res;
-}
-
 void test() {
 
   // parallel
   printf("\nparallel\n");
   struct Vector y = Vector{1, 1, 0};
   struct Vector r = Vector{1, 1, 0};
-  struct Bivector angle_err = angle_err_bivector(y, r);
+  struct Bivector angle_err = angle_difference_bivector(y, r);
   printf("e12: %f, e31: %f, e23: %f\n", (double)angle_err.e12,
          (double)angle_err.e31, (double)angle_err.e23);
 
@@ -615,18 +443,18 @@ void test() {
   printf("\nantiparallel\n");
   y = Vector{1, 1, 0};
   r = Vector{-1, -1, 0};
-  angle_err = angle_err_bivector(y, r);
+  angle_err = angle_difference_bivector(y, r);
 
   // general
   printf("\ngeneral\n");
   y = Vector{1.0, 0.0, 0.0};
   r = Vector{0.0, 1.0, 0.0};
-  angle_err = angle_err_bivector(y, r);
+  angle_err = angle_difference_bivector(y, r);
 
   printf("\ngeneral\n");
   y = Vector{3.0, 1.0, -6.0};
   r = Vector{-3.0, 1.0, 4.0};
-  angle_err = angle_err_bivector(y, r);
+  angle_err = angle_difference_bivector(y, r);
 
   printf("\nfn inverse matrix:\n");
   Matrix3x3 matrix{
@@ -667,7 +495,9 @@ void test() {
   float pre = angle / bi_norm;
   Bivector angle_bivector = Bivector{0.5f * pre, 5.2f * pre, -3.0f * pre};
   Vector vector = Vector{6.4f, -4.5f, 3.3f};
-  Vector res = rotate_vector(vector, angle_bivector);
+  Rotor rotor =
+      rotor_form_halv_angle_bivector(scale_bivector(angle_bivector, 0.5));
+  Vector res = rotate_vector(vector, rotor);
 
   printf("  This is the solution:\n");
   printf("  %f, %f, %f\n", 6.6072783, -3.6931403, -3.847674);

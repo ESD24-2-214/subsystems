@@ -1,8 +1,14 @@
 *.log
 tmp/
+control
 
 .direnv
 *.out
+
+# plots
+*.csv
+*.pdf
+*.png
 
 .cache
 .projectile

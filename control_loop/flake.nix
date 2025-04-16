@@ -36,6 +36,14 @@
               vcpkg
               vcpkg-tool
 
+              (rWrapper.override {
+                packages = with rPackages;
+                  [
+                    tidyverse
+
+                  ];
+              })
+
             ] ++ (if system == "aarch64-darwin" then [ ] else [ gdb ]);
           buildInputs = with pkgs; [
             clang
