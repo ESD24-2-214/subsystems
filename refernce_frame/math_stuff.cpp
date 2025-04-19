@@ -75,19 +75,164 @@ Matrix3x3 matrix_inv(Matrix3x3 matrix) {
   return res;
 };
 
-Bivector matrix_bivector_mul(Matrix3x3 matrix, Bivector bivector) {
+Matrix3x3 matrix_dual(Matrix3x3 matrix) {
+  // Takes matrix ment for vectors and turns matrix ment for bivectors
+  // The dual of a vector:
+  // Vector {e1, e2, e3}
+  // becomes:
+  // Bivector {e12: e3, e31: e2, e23: e1}
+  // Therefor the dual of a matrix must be the flip in the secondary diaginal
+#ifdef DEBUG
+  FNPRINT("\nMatrix Dual\n");
+  FNPRINT("Input Matrix {\n");
+  FNPRINT("\t%f, %f, %f\n", (double)matrix.m11, (double)matrix.m12,
+          (double)matrix.m13);
+  FNPRINT("\t%f, %f, %f\n", (double)matrix.m21, (double)matrix.m22,
+          (double)matrix.m23);
+  FNPRINT("\t%f, %f, %f }\n", (double)matrix.m31, (double)matrix.m32,
+          (double)matrix.m33);
+#endif
 
-  Bivector res = Bivector{
-      .e12 = (matrix.m11 * bivector.e12) + (matrix.m12 * bivector.e12) +
-             (matrix.m13 * bivector.e12),
-
-      .e31 = (matrix.m21 * bivector.e31) + (matrix.m22 * bivector.e31) +
-             (matrix.m23 * bivector.e31),
-
-      .e23 = (matrix.m31 * bivector.e23) + (matrix.m32 * bivector.e23) +
-             (matrix.m33 * bivector.e23),
+  Matrix3x3 matrix_for_bivectors = Matrix3x3{
+      .m11 = matrix.m33,
+      .m12 = matrix.m23,
+      .m13 = matrix.m13,
+      //
+      .m21 = matrix.m32,
+      .m22 = matrix.m22,
+      .m23 = matrix.m12,
+      //
+      .m31 = matrix.m31,
+      .m32 = matrix.m21,
+      .m33 = matrix.m11,
   };
 
+#ifdef DEBUG
+  FNPRINT("Matrix_For_Bivectors {\n");
+  FNPRINT("\t%f, %f, %f\n", (double)matrix_for_bivectors.m11,
+          (double)matrix_for_bivectors.m12, (double)matrix_for_bivectors.m13);
+  FNPRINT("\t%f, %f, %f\n", (double)matrix_for_bivectors.m21,
+          (double)matrix_for_bivectors.m22, (double)matrix_for_bivectors.m23);
+  FNPRINT("\t%f, %f, %f }\n", (double)matrix_for_bivectors.m31,
+          (double)matrix_for_bivectors.m32, (double)matrix_for_bivectors.m33);
+#endif
+  return matrix_for_bivectors;
+}
+
+Matrix3x3 matrix_from_vectors(Vector vector1, Vector vector2, Vector vector3) {
+  Matrix3x3 res = Matrix3x3{
+      .m11 = vector1.e1,
+      .m12 = vector2.e1,
+      .m13 = vector3.e1,
+
+      .m21 = vector1.e2,
+      .m22 = vector2.e2,
+      .m23 = vector3.e2,
+
+      .m31 = vector1.e3,
+      .m32 = vector2.e3,
+      .m33 = vector3.e3,
+  };
+
+#ifdef DEBUG
+  FNPRINT("Matrix from Vectors:\n");
+  FNPRINT("  %f, %f, %f\n", (double)res.m11, (double)res.m12, (double)res.m13);
+  FNPRINT("  %f, %f, %f\n", (double)res.m21, (double)res.m22, (double)res.m23);
+  FNPRINT("  %f, %f, %f\n\n", (double)res.m31, (double)res.m32,
+          (double)res.m33);
+#endif
+
+  return res;
+};
+
+Vector matrix_vector_mul(Matrix3x3 matrix, Vector vector) {
+#ifdef DEBUG
+  FNPRINT("\nVector matrix mul input:\n");
+  FNPRINT("Vector {");
+  FNPRINT("%f, %f, %f }\n", (double)vector.e1, (double)vector.e2,
+          (double)vector.e3);
+  FNPRINT("Matrix {\n");
+  FNPRINT("\t%f, %f, %f\n", (double)matrix.m11, (double)matrix.m12,
+          (double)matrix.m13);
+  FNPRINT("\t%f, %f, %f\n", (double)matrix.m21, (double)matrix.m22,
+          (double)matrix.m23);
+  FNPRINT("\t%f, %f, %f }\n", (double)matrix.m31, (double)matrix.m32,
+          (double)matrix.m33);
+#endif
+
+  Vector res = Vector{
+      .e1 = (matrix.m11 * vector.e1) + (matrix.m12 * vector.e2) +
+            (matrix.m13 * vector.e2),
+
+      .e2 = (matrix.m21 * vector.e1) + (matrix.m22 * vector.e2) +
+            (matrix.m23 * vector.e3),
+
+      .e3 = (matrix.m31 * vector.e1) + (matrix.m32 * vector.e2) +
+            (matrix.m33 * vector.e3),
+  };
+
+#ifdef DEBUG
+  FNPRINT("Vector matrix mul res:\n");
+  FNPRINT("\tVector {");
+  FNPRINT("%f, %f, %f }\n", (double)res.e1, (double)res.e2, (double)res.e3);
+#endif
+  return res;
+}
+
+Bivector matrix_bivector_mul(Matrix3x3 matrix, Bivector bivector) {
+#ifdef DEBUG
+  FNPRINT("\nBivector matrix mul input:\n");
+  FNPRINT("Bivector {");
+  FNPRINT("%f, %f, %f }\n", (double)bivector.e12, (double)bivector.e31,
+          (double)bivector.e23);
+  FNPRINT("Matrix {\n");
+  FNPRINT("\t%f, %f, %f\n", (double)matrix.m11, (double)matrix.m12,
+          (double)matrix.m13);
+  FNPRINT("\t%f, %f, %f\n", (double)matrix.m21, (double)matrix.m22,
+          (double)matrix.m23);
+  FNPRINT("\t%f, %f, %f }\n", (double)matrix.m31, (double)matrix.m32,
+          (double)matrix.m33);
+
+#endif
+
+  Bivector res = Bivector{
+      .e12 = (matrix.m11 * bivector.e12) + (matrix.m12 * bivector.e31) +
+             (matrix.m13 * bivector.e23),
+
+      .e31 = (matrix.m21 * bivector.e12) + (matrix.m22 * bivector.e31) +
+             (matrix.m23 * bivector.e23),
+
+      .e23 = (matrix.m31 * bivector.e12) + (matrix.m32 * bivector.e31) +
+             (matrix.m33 * bivector.e23),
+  };
+#ifdef DEBUG
+  FNPRINT("Bivector matrix mul res:\n");
+  FNPRINT("\tBivector {");
+  FNPRINT("%f, %f, %f }\n", (double)res.e12, (double)res.e31, (double)res.e23);
+#endif
+
+  return res;
+}
+Vector vector_cross(Vector a, Vector b) {
+#ifdef DEBUG
+  FNPRINT("\nVector Cross:\n");
+  FNPRINT("\tbivector a:\n");
+  FNPRINT("\t%f, %f, %f\n", (double)a.e1, (double)a.e2, (double)a.e3);
+  FNPRINT("\t%f, %f, %f\n", (double)b.e1, (double)b.e2, (double)b.e3);
+#endif
+
+  // The anti symmetric product of bivectors
+  Vector res = Vector{
+      .e1 = a.e2 * b.e3 - a.e3 * b.e2,
+      .e2 = a.e3 * b.e1 - a.e1 * b.e3,
+      .e3 = a.e1 * b.e2 - a.e2 * b.e1,
+  };
+
+#ifdef DEBUG
+  FNPRINT("\tVector res: {");
+  FNPRINT(" e1: %f,e2: %f,e3: %f } \n", (double)res.e1, (double)res.e2,
+          (double)res.e3);
+#endif
   return res;
 }
 
@@ -112,6 +257,97 @@ Bivector bivector_cross(Bivector a, Bivector b) {
   FNPRINT("  %f, %f, %f\n", (double)res.e12, (double)res.e31, (double)res.e23);
 #endif
   return res;
+}
+Bivector angle_difference_bivector(Vector a, Vector b) {
+
+  // Find the angle error bivector betweem the current vector and refernce
+  // $$ \overset\Rightarrow{\theta}_\text{err} =
+  // \frac{\vec{y}\wedge \vec{r}}{|\vec{y}\wedge \vec{r}|}
+  // \arccos \left( \frac{|\vec{y}\cdot \vec{r}|}{|\vec{y}| |\vec{r}|} \right)
+  // $$
+
+  // There are three cases
+  // 1 They are parallel and the same direction. There the error angle is 0
+  // with no plane 2 They are anti parallet in the opesite direction. The
+  // error angle is pi with no plane ( give a plane) 3 anything in between.
+  // Has both plane and error
+
+  // $$ \vec{y}\cdot \vec{r} $$
+  float inner_product = (a.e1 * b.e1)   //
+                        + (a.e2 * b.e2) //
+                        + (a.e3 * b.e3);
+
+  // Norm of inner product
+  // $$A A^{\dag}$$
+  float a_norm = sqrtf(float((a.e1 * a.e1)   //
+                             + (a.e2 * a.e2) //
+                             + (a.e3 * a.e3)));
+  float b_norm = sqrtf(float((b.e1 * b.e1)   //
+                             + (b.e2 * b.e2) //
+                             + (b.e3 * b.e3)));
+  float inner_norm = inner_product / (a_norm * b_norm);
+
+#ifdef DEBUG
+  FNPRINT("inner norm: %f\n", (double)inner_norm);
+#endif
+
+  // if (inner_product > 0.90000000f) { // parallel
+  if (inner_norm >= 1.0f && inner_norm <= 1.0000001f) { // parallel
+#ifdef DEBUG
+    FNPRINT("parallel path\n");
+#endif
+
+    return Bivector{0.0, 0.0, 0.0};
+  } else if (inner_norm >= -1.01f && inner_norm <= -1.00f) { // anti
+                                                             // parallel
+#ifdef DEBUG
+    FNPRINT("anti parallel path\n");
+#endif
+
+    return Bivector{3.14159274f, 0.0, 0.0};
+  } else { // everything else
+#ifdef DEBUG
+    FNPRINT("general path\n");
+#endif
+
+    // $$ \vec{y}\wedge \vec{r} $$
+    Bivector plane = {
+        .e12 = a.e1 * b.e2 - a.e2 * b.e1,
+        .e31 = a.e3 * b.e1 - a.e1 * b.e3,
+        .e23 = a.e2 * b.e3 - a.e3 * b.e2,
+    };
+
+    // Norm of exterior product
+    // $$A A^{\dag}$$
+    float plane_area = sqrtf(float((plane.e12 * plane.e12)   //
+                                   + (plane.e31 * plane.e31) //
+                                   + (plane.e23 * plane.e23)));
+
+    // $$\arccos\left(\frac{|\vec{y}\cdot\vec{r}|}{|\vec{y}||\vec{r}|}\right)$$
+    float angle_scalar = acosf(float(inner_norm));
+
+#ifdef DEBUG
+    FNPRINT("angle scalar: %f, degree: %f\n", (double)angle_scalar,
+            (double)(angle_scalar * 180.0f / 3.14159274f));
+#endif
+
+    // scales plane area to 1 and set the angle
+    float scalar = angle_scalar / plane_area;
+
+    Bivector angle = Bivector{
+        plane.e12 * scalar,
+        plane.e31 * scalar,
+        plane.e23 * scalar,
+    };
+
+#ifdef DEBUG
+    FNPRINT("angle err\n");
+    printf("  e12: %f\n", (double)angle.e12);
+    printf("  e31: %f\n", (double)angle.e31);
+    printf("  e23: %f\n", (double)angle.e23);
+#endif
+    return angle;
+  }
 }
 
 Bivector scale_bivector(Bivector bivector, float scalar) {
