@@ -106,7 +106,8 @@ int main() {
     return 1;
   }
 
-  file << "Time, Angle Error Norm\n";
+  file << "Time, Angle Error Norm, Angle Error e1e2,Angle Error e3e1, Angle "
+          "Error e2e3,\n";
 
   Vector reference = Vector{0, 1, 0};
   Vector current = Vector{1, 0, 0};
@@ -140,6 +141,12 @@ int main() {
     file << time;
     file << ", ";
     file << norm;
+    file << ", ";
+    file << angle_err.e12;
+    file << ", ";
+    file << angle_err.e31;
+    file << ", ";
+    file << angle_err.e23;
     file << "\n";
 
     Bivector pid_res = pid(0.4f, 0.0f, 1.0f, angle_err);
