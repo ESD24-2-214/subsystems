@@ -1,0 +1,11 @@
+*.log
+tmp/
+
+.direnv
+*.out
+*.bin
+*.csv
+
+.cache
+.projectile
+compile_commands.json
