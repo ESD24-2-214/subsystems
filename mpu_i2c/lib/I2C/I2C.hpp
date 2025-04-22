@@ -2,8 +2,7 @@
 #ifndef I2C_Hpp
 #define I2C_Hpp
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <Arduino.h>
 #include <esp_err.h>
 #include <esp32-hal.h>
 #include <esp32-hal-i2c.h>
@@ -14,16 +13,17 @@
 #endif
 #include "Stream.h"
 
-#define size_t unsigned int
+#define unsigned int size_t
 
 #ifndef I2C_BUFFER_LENGTH
     #define I2C_BUFFER_LENGTH 128  // Default size, if none is set using Wire::setBuffersize(size_t)
 #endif
 
-// #define log_e should be defined if not using aruino IDE error logging
+#define DEBUG(x, y) {Serial.print(x); Serial.println(y);} // should be defined if not using aruino IDE error logging
+// #define DEBUG(x, y) {}
+// #define DEBUG2(x) Serial.println(x);
+#define DEBUG2(x) {}
 
-static const uint8_t SDA = 18; // default SDA pin for lilygo-ESP32-s3
-static const uint8_t SCL = 17; // default SCL pin for lilygo-ESP32-s3
 
 class MasterI2C : public Stream
 {
@@ -52,12 +52,6 @@ private:
     bool initPins(int sdaPin, int sclPin);
     bool allocateI2CBuffer(void);
     void freeI2CBuffer(void);
-#if !CONFIG_DISABLE_HAL_LOCKS
-    bool create_lock(void);
-    bool acquire_lock(SemaphoreHandle_t lock);
-    bool release_lock(SemaphoreHandle_t lock);
-    bool create_acquire_lock(void);
-#endif
 public:
     
     MasterI2C(uint8_t bus_num);
@@ -66,7 +60,7 @@ public:
     bool setPins(int sdaPin, int sclPin);
 
     // returns true, if successful init of i2c bus
-    bool begin(int sdaPin, int sclPin, uint32_t frequency=0); 
+    bool begin(int sdaPin, int sclPin, uint32_t frequency); 
 
     bool hasStarted(void); // returns true, if successful init of i2c bus
 
@@ -82,14 +76,21 @@ public:
 
     void beginTransmission(uint16_t address);
 
-    uint8_t transmit();
+    uint8_t transmitWrite();
 
-    uint8_t endTransmission(void);
+    bool endTransmission(void);
 
     size_t write(uint8_t data);
     size_t write(const uint8_t *data, size_t quantity);
 
-    uint8_t requestData(uint16_t address, size_t size, bool sendStop);
+    uint8_t requestData(size_t rsize, bool writeRead, uint16_t address=0);
+
+    //inline uint8_t requestData(size_t rsize, bool writeRead){
+    //    return requestData(rsize, writeRead, 0);
+    //}
+
+
+
 
     int available(void);
     int read(void);
@@ -99,6 +100,11 @@ public:
 
 };
 
-
+#if !CONFIG_DISABLE_HAL_LOCKS
+    bool create_lock(SemaphoreHandle_t *lock);
+    bool acquire_lock(SemaphoreHandle_t lock);
+    bool release_lock(SemaphoreHandle_t lock);
+    bool create_acquire_lock(SemaphoreHandle_t *lock);
+#endif
 
 #endif // I2C_Hpp

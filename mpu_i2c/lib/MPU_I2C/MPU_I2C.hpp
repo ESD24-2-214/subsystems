@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include <Wire.h>
+//#include <Wire.h>
+#include <I2C.hpp>
 #include <MPU_ADDRESS.hpp>
 #include <AK8963_ADDRESS.hpp>
 
@@ -14,6 +15,8 @@
 
 
 #define Bypass_Enable_Config_add 0x37 // I2C_BYPASS_EN register
+
+extern MasterI2C MPU_I2C;
 
 typedef struct {
     double xy;
@@ -37,7 +40,7 @@ void hard_reset_MPU9255(void);
 void I2Cbus_SCCAN(void);
 void resolution_config(resolution mode);
 void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t bit_pos);
-void magnometer_bypass(bool state);
+void bypass_to_magnometer(bool state);
 void read(uint8_t unit_addr, uint8_t local_addr, uint8_t *data, uint8_t size);
 void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte);
 void read_gryroscope(Vector *gyro_data);

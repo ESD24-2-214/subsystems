@@ -5,6 +5,7 @@
 #include <AK8963_ADDRESS.hpp>
 
 
+MasterI2C MPU_I2C = MasterI2C(0);
 
 /* @brief This function is used to hard reset the MPU9255
 ** @note Resets the internal registers and restores the default settings.
@@ -17,7 +18,7 @@ void hard_reset_MPU9255(void)
 /* @brief This function is used to enable or disable the bypass mode of the magnometer
 ** @param state: true to enable the bypass mode, false to disable the bypass mode
 */
-void magnometer_bypass(bool state)
+void bypass_to_magnometer(bool state)
 {
   set_bit_config(MPU9255_ADDRESS, Bypass_Enable_Config_add, state, 1);
 }
@@ -37,14 +38,15 @@ void resolution_config(resolution mode){
 ** @param bit_pos: the position of the bit to set
 */
 void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t bit_pos){
-  Wire.beginTransmission(unit_addr);
-    Wire.write(local_addr);
-  Wire.endTransmission(true);
-    Wire.requestFrom((uint16_t)unit_addr, (size_t)BYTE, false);
-    uint8_t ConfigByte = Wire.read();
+  MPU_I2C.beginTransmission(unit_addr);
+    MPU_I2C.write((uint8_t)local_addr);
+    MPU_I2C.requestData((size_t)BYTE, true);
+    uint8_t ConfigByte = MPU_I2C.read();
     ConfigByte = (state = true) ? (ConfigByte | (1 << bit_pos)) : (ConfigByte & ~(1 << bit_pos));
-    Wire.write(ConfigByte);
-  Wire.endTransmission(true);
+    MPU_I2C.write(local_addr);
+    MPU_I2C.write(ConfigByte);
+    MPU_I2C.transmitWrite();
+  MPU_I2C.endTransmission();
 }
 
 /* @brief This function is used to read data from a register to an array
@@ -55,14 +57,14 @@ void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t 
 */
 void read(uint8_t unit_addr, uint8_t local_addr, uint8_t data[], uint8_t size)
 {
-  Wire.beginTransmission(unit_addr);
-  Wire.write(local_addr);
-  Wire.endTransmission(true);
-  Wire.requestFrom(unit_addr, size, false);
+  MPU_I2C.beginTransmission(unit_addr);
+    MPU_I2C.write((uint8_t)local_addr);
+    MPU_I2C.requestData(size, true);
   for (uint8_t i = 0; i < size; i++)
   {
-    data[i] = Wire.read();
+    data[i] = MPU_I2C.read();
   }
+  MPU_I2C.endTransmission();
 }
 
 /* @brief This function is used to write data to a register
@@ -72,11 +74,11 @@ void read(uint8_t unit_addr, uint8_t local_addr, uint8_t data[], uint8_t size)
 */
 void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte)
 {
-  Wire.beginTransmission(unit_addr);
-    Wire.write(local_addr);
-  Wire.endTransmission(false);
-    Wire.write(data_byte);
-  Wire.endTransmission(true);
+  MPU_I2C.beginTransmission(unit_addr);
+    MPU_I2C.write(local_addr);
+    MPU_I2C.write(data_byte);
+    MPU_I2C.transmitWrite();
+  MPU_I2C.endTransmission();
 }
 
 /* @brief This function is used to read the accelerometer data
@@ -124,8 +126,8 @@ void I2Cbus_SCCAN(void){
   Serial.println(">>>Scanning I2C bus<<<");
   for (int i = 0; i < 128; i++)
   {
-    Wire.beginTransmission(i);
-    if (Wire.endTransmission() == 0)
+    MPU_I2C.beginTransmission(i);
+    if (MPU_I2C.transmitWrite() == 0)
     {
       Serial.print("I2C device found at address 0x");
       if (i < 16)
@@ -135,6 +137,7 @@ void I2Cbus_SCCAN(void){
       Serial.print(i, HEX);
       Serial.println(" !");
     }
+    MPU_I2C.endTransmission();
   }
   Serial.println(">>>Scanning I2C bus complete<<<");
 }
