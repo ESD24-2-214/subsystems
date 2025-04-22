@@ -1,0 +1,138 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "14c04de7-71ee-4f20-9e6e-041dbb035733")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 58.42 55.88)
+		(size 36.83 19.05)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "021973d6-cb49-4352-a4ea-b5027e022f92")
+		(property "Sheetname" "ACS_mag"
+			(at 58.42 55.1684 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "acs_magnetorquer.kicad_sch"
+			(at 58.42 75.5146 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "mag1_neg" input
+			(at 58.42 69.85 180)
+			(uuid "f9c306ab-0ba6-4e19-81f6-bce77c22902e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "mag1_pos" input
+			(at 58.42 59.69 180)
+			(uuid "875e25cc-05e7-42c7-85f8-838181e405c0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "mag2_neg" input
+			(at 95.25 69.85 0)
+			(uuid "a572eeed-3963-43ff-a951-21607e19d30c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "mag2_pos" input
+			(at 95.25 59.69 0)
+			(uuid "bd95a296-89a9-4c59-95c7-26a2d6ac2c25")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 118.11 58.42)
+		(size 19.05 8.89)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "cff9f0de-66a8-40e0-bfeb-91cf114478e3")
+		(property "Sheetname" "MPU-9255"
+			(at 118.11 57.7084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mpu_9255.kicad_sch"
+			(at 118.11 67.8946 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)
