@@ -627,7 +627,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "001c3d8d-6b02-436b-af3c-2333f6453720")
-		(property "Reference" "U4"
+		(property "Reference" "U2"
 			(at 127 54.61 0)
 			(effects
 				(font
@@ -694,6 +694,14 @@
 		(pin "1"
 			(uuid "5d982314-fa71-485f-8962-d5382dae71de")
 		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733/cff9f0de-66a8-40e0-bfeb-91cf114478e3"
+					(reference "U2")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -705,7 +713,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "07efac8d-e688-4cd3-abb1-3244b06f4cba")
-		(property "Reference" "#PWR018"
+		(property "Reference" "#PWR0102"
 			(at 110.49 91.44 0)
 			(effects
 				(font
@@ -752,6 +760,14 @@
 		(pin "1"
 			(uuid "873b101a-b2c9-4740-91c1-59a3d3f769ff")
 		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733/cff9f0de-66a8-40e0-bfeb-91cf114478e3"
+					(reference "#PWR0102")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:+3.3V")
@@ -763,7 +779,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "96bf37ab-c1cc-4502-b46f-57f6d35883ab")
-		(property "Reference" "#PWR016"
+		(property "Reference" "#PWR0101"
 			(at 110.49 63.5 0)
 			(effects
 				(font
@@ -809,6 +825,14 @@
 		)
 		(pin "1"
 			(uuid "aca6104e-618d-4c2b-a541-6da4c6b61f49")
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733/cff9f0de-66a8-40e0-bfeb-91cf114478e3"
+					(reference "#PWR0101")
+					(unit 1)
+				)
+			)
 		)
 	)
 )
