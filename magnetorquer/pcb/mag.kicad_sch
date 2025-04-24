@@ -6,7 +6,7 @@
 	(paper "A4")
 	(lib_symbols)
 	(sheet
-		(at 58.42 55.88)
+		(at 35.56 101.6)
 		(size 36.83 19.05)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -22,7 +22,7 @@
 		)
 		(uuid "021973d6-cb49-4352-a4ea-b5027e022f92")
 		(property "Sheetname" "ACS_mag"
-			(at 58.42 55.1684 0)
+			(at 35.56 100.8884 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31,7 +31,7 @@
 			)
 		)
 		(property "Sheetfile" "acs_magnetorquer.kicad_sch"
-			(at 58.42 75.5146 0)
+			(at 35.56 121.2346 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -40,7 +40,7 @@
 			)
 		)
 		(pin "mag1_neg" input
-			(at 58.42 69.85 180)
+			(at 35.56 115.57 180)
 			(uuid "f9c306ab-0ba6-4e19-81f6-bce77c22902e")
 			(effects
 				(font
@@ -50,7 +50,7 @@
 			)
 		)
 		(pin "mag1_pos" input
-			(at 58.42 59.69 180)
+			(at 35.56 105.41 180)
 			(uuid "875e25cc-05e7-42c7-85f8-838181e405c0")
 			(effects
 				(font
@@ -60,7 +60,7 @@
 			)
 		)
 		(pin "mag2_neg" input
-			(at 95.25 69.85 0)
+			(at 72.39 115.57 0)
 			(uuid "a572eeed-3963-43ff-a951-21607e19d30c")
 			(effects
 				(font
@@ -70,7 +70,7 @@
 			)
 		)
 		(pin "mag2_pos" input
-			(at 95.25 59.69 0)
+			(at 72.39 105.41 0)
 			(uuid "bd95a296-89a9-4c59-95c7-26a2d6ac2c25")
 			(effects
 				(font
@@ -88,7 +88,49 @@
 		)
 	)
 	(sheet
-		(at 118.11 58.42)
+		(at 88.9 78.74)
+		(size 24.13 45.72)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "920327e4-2a04-4564-ba11-3f3834c7006e")
+		(property "Sheetname" "ESP32"
+			(at 88.9 78.0284 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ESP32.kicad_sch"
+			(at 88.9 125.0446 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 105.41 63.5)
 		(size 19.05 8.89)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -104,7 +146,7 @@
 		)
 		(uuid "cff9f0de-66a8-40e0-bfeb-91cf114478e3")
 		(property "Sheetname" "MPU-9255"
-			(at 118.11 57.7084 0)
+			(at 105.41 62.7884 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -113,7 +155,7 @@
 			)
 		)
 		(property "Sheetfile" "mpu_9255.kicad_sch"
-			(at 118.11 67.8946 0)
+			(at 105.41 72.9746 0)
 			(effects
 				(font
 					(size 1.27 1.27)

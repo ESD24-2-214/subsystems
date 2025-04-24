@@ -101,6 +101,7 @@
         "solder_mask_bridge": "error",
         "starved_thermal": "error",
         "text_height": "warning",
+        "text_on_edge_cuts": "error",
         "text_thickness": "warning",
         "through_hole_pad_without_hole": "error",
         "too_many_vias": "error",
@@ -619,6 +620,10 @@
     [
       "cff9f0de-66a8-40e0-bfeb-91cf114478e3",
       "MPU-9255"
+    ],
+    [
+      "920327e4-2a04-4564-ba11-3f3834c7006e",
+      "ESP32"
     ]
   ],
   "text_variables": {}
