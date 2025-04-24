@@ -39,3 +39,6 @@
 
 #define PWR_MGMT_1 0x6B // Power Management 1 register
 #define PWR_MGMT_2 0x6C // Power Management 2 register
+#define GYRO_CONFIG 0x1B // Gyroscope configuration register
+#define ACCEL_CONFIG 0x1C // Accelerometer configuration register
+#define ACCEL_CONFIG2 0x1D // Accelerometer configuration register 2

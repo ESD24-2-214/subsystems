@@ -13,16 +13,16 @@
 #endif
 #include "Stream.h"
 
+#include <Config.hpp>
+#include <semaph.hpp>
+
 #define unsigned int size_t
 
 #ifndef I2C_BUFFER_LENGTH
     #define I2C_BUFFER_LENGTH 128  // Default size, if none is set using Wire::setBuffersize(size_t)
 #endif
 
-#define DEBUG(x, y) {Serial.print(x); Serial.println(y);} // should be defined if not using aruino IDE error logging
-// #define DEBUG(x, y) {}
-// #define DEBUG2(x) Serial.println(x);
-#define DEBUG2(x) {}
+
 
 
 class MasterI2C : public Stream
@@ -59,8 +59,8 @@ public:
 
     bool setPins(int sdaPin, int sclPin);
 
-    // returns true, if successful init of i2c bus
-    bool begin(int sdaPin, int sclPin, uint32_t frequency); 
+    
+    bool begin(int sdaPin, int sclPin, uint32_t frequency); // returns true, if successful init of i2c bus
 
     bool hasStarted(void); // returns true, if successful init of i2c bus
 
@@ -85,9 +85,6 @@ public:
 
     uint8_t requestData(size_t rsize, bool writeRead, uint16_t address=0);
 
-    //inline uint8_t requestData(size_t rsize, bool writeRead){
-    //    return requestData(rsize, writeRead, 0);
-    //}
 
 
 
@@ -100,11 +97,6 @@ public:
 
 };
 
-#if !CONFIG_DISABLE_HAL_LOCKS
-    bool create_lock(SemaphoreHandle_t *lock);
-    bool acquire_lock(SemaphoreHandle_t lock);
-    bool release_lock(SemaphoreHandle_t lock);
-    bool create_acquire_lock(SemaphoreHandle_t *lock);
-#endif
+
 
 #endif // I2C_Hpp

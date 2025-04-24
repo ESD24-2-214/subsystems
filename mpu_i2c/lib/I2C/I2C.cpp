@@ -8,7 +8,8 @@ extern "C" {
     #include "esp32-hal-i2c-slave.h"
     #include "I2C.hpp"
     #include "Arduino.h"
-
+    
+    
 
 MasterI2C::MasterI2C(uint8_t bus_num)
     :esp_i2c_num(bus_num & 1)
@@ -309,8 +310,6 @@ uint8_t MasterI2C::requestData(size_t rsize, bool writeRead, uint16_t address){
     return rxLength;
 }
 
-
-
 size_t MasterI2C::write(uint8_t data){
     if (txBuffer == NULL){
         DEBUG("NULL TX buffer pointer", " ");
@@ -374,47 +373,5 @@ void MasterI2C::flush(void)
     txLength = 0;
 }
 
-#if !CONFIG_DISABLE_HAL_LOCKS
-bool create_lock(SemaphoreHandle_t *lock){
-    if(*lock == NULL){
-        DEBUG2("Creating....")
-        *lock = xSemaphoreCreateMutex();
-        if(*lock == NULL){
-            DEBUG("xSemaphoreCreateMutex failed"," ");
-            return false;
-        }
-        DEBUG2("Created....")
-        return true;
-    }
-    return false;
-    DEBUG("Semaphore exist, lock != NULL"," ");
-}
 
-bool acquire_lock(SemaphoreHandle_t lock){
-    if(lock == NULL || (xSemaphoreTake(lock, portMAX_DELAY) != pdTRUE) ){
-        DEBUG("could not acquire lock"," ");
-        return false;
-    }
-    return true;
-}
-
-bool release_lock(SemaphoreHandle_t lock){
-    if(lock == NULL){
-        DEBUG("could not release lock"," ");
-        return false;
-    }   
-    if(xSemaphoreGive(lock) != pdTRUE){
-        DEBUG("could not release lock or lock was not acquired"," ");
-        return false;
-    }
-    return true;
-}
-
-bool create_acquire_lock(SemaphoreHandle_t *lock){
-    if(*lock != NULL){return false;}
-    if(!create_lock(lock)){return false;}
-    if(!acquire_lock(*lock)){return false;}
-    return true;
-}
-#endif
 
