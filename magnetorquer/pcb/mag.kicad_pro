@@ -624,6 +624,22 @@
     [
       "920327e4-2a04-4564-ba11-3f3834c7006e",
       "ESP32"
+    ],
+    [
+      "714785ba-3303-4d57-9c32-4841bec1e1c2",
+      "LDR_Forward"
+    ],
+    [
+      "15af55bb-e28b-4539-9b7d-24d137fdf430",
+      "LDR_Back"
+    ],
+    [
+      "9f990fc4-e861-4ed4-b802-8259016bf14d",
+      "LDR_Left"
+    ],
+    [
+      "f90e8bbb-8262-4c4d-81f6-93d124f86469",
+      "LDR_Right"
     ]
   ],
   "text_variables": {}

@@ -5,8 +5,174 @@
 	(uuid "14c04de7-71ee-4f20-9e6e-041dbb035733")
 	(paper "A4")
 	(lib_symbols)
+	(bus_entry
+		(at 135.89 87.63)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "49816264-3069-4566-8833-a557f2e72293")
+	)
+	(bus_entry
+		(at 135.89 110.49)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "650481c9-6fa7-4583-b76a-129af1a96ec9")
+	)
+	(bus_entry
+		(at 135.89 76.2)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7baaa810-eb86-4568-ac86-9dc683c801bd")
+	)
+	(bus_entry
+		(at 135.89 99.06)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ebf3362c-87e9-4858-9c32-3f819fefae5c")
+	)
+	(bus
+		(pts
+			(xy 115.57 76.2) (xy 135.89 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2925d743-0011-4ab6-9c53-16854f897f44")
+	)
+	(bus
+		(pts
+			(xy 69.85 76.2) (xy 91.44 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3050dd80-1275-4871-b13a-837e93f45302")
+	)
+	(bus
+		(pts
+			(xy 135.89 87.63) (xy 135.89 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4280ca48-a5d5-4bc7-a0a6-e0e393b741a8")
+	)
+	(wire
+		(pts
+			(xy 138.43 78.74) (xy 151.13 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "75e59196-0147-4306-b8cb-443180c9681b")
+	)
+	(wire
+		(pts
+			(xy 138.43 113.03) (xy 151.13 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "77d360e0-838b-4e3b-b320-7fa5c515d330")
+	)
+	(bus
+		(pts
+			(xy 135.89 76.2) (xy 135.89 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "82e80bb0-826f-4912-b24b-fa66e3e25aa4")
+	)
+	(wire
+		(pts
+			(xy 138.43 101.6) (xy 151.13 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9c3f5d15-6818-44fd-9347-6a01ed1cdd31")
+	)
+	(wire
+		(pts
+			(xy 138.43 90.17) (xy 151.13 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b37a28b5-4f86-41c3-b374-60b99d313378")
+	)
+	(bus
+		(pts
+			(xy 135.89 99.06) (xy 135.89 110.49)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e240efdb-d823-4094-a18c-d5b48a926b4d")
+	)
+	(label "LDR_Left"
+		(at 138.43 101.6 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2c4c23e0-adab-403e-b5a5-920e4d183427")
+	)
+	(label "LDR_Back"
+		(at 138.43 90.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6098e5df-688d-4562-aace-638800b676fb")
+	)
+	(label "LDR_Forward"
+		(at 138.43 78.74 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a3a92987-623d-4b1b-a6e7-dcf5c1086cf2")
+	)
+	(label "LDR_Right"
+		(at 138.43 113.03 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "eed702c7-1dcc-4458-834d-45c90fcfb3e6")
+	)
 	(sheet
-		(at 35.56 101.6)
+		(at 30.48 109.22)
 		(size 36.83 19.05)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -22,7 +188,7 @@
 		)
 		(uuid "021973d6-cb49-4352-a4ea-b5027e022f92")
 		(property "Sheetname" "ACS_mag"
-			(at 35.56 100.8884 0)
+			(at 30.48 108.5084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31,7 +197,7 @@
 			)
 		)
 		(property "Sheetfile" "acs_magnetorquer.kicad_sch"
-			(at 35.56 121.2346 0)
+			(at 30.48 128.8546 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -40,7 +206,7 @@
 			)
 		)
 		(pin "mag1_neg" input
-			(at 35.56 115.57 180)
+			(at 30.48 123.19 180)
 			(uuid "f9c306ab-0ba6-4e19-81f6-bce77c22902e")
 			(effects
 				(font
@@ -50,7 +216,7 @@
 			)
 		)
 		(pin "mag1_pos" input
-			(at 35.56 105.41 180)
+			(at 30.48 113.03 180)
 			(uuid "875e25cc-05e7-42c7-85f8-838181e405c0")
 			(effects
 				(font
@@ -60,7 +226,7 @@
 			)
 		)
 		(pin "mag2_neg" input
-			(at 72.39 115.57 0)
+			(at 67.31 123.19 0)
 			(uuid "a572eeed-3963-43ff-a951-21607e19d30c")
 			(effects
 				(font
@@ -70,7 +236,7 @@
 			)
 		)
 		(pin "mag2_pos" input
-			(at 72.39 105.41 0)
+			(at 67.31 113.03 0)
 			(uuid "bd95a296-89a9-4c59-95c7-26a2d6ac2c25")
 			(effects
 				(font
@@ -88,7 +254,111 @@
 		)
 	)
 	(sheet
-		(at 88.9 78.74)
+		(at 151.13 87.63)
+		(size 16.51 5.08)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "15af55bb-e28b-4539-9b7d-24d137fdf430")
+		(property "Sheetname" "LDR_Back"
+			(at 151.13 86.9184 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ldr.kicad_sch"
+			(at 151.13 93.2946 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "analog_out" output
+			(at 151.13 90.17 180)
+			(uuid "e1666ab9-a717-477d-a1e6-0b7cd1a6fd03")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 151.13 76.2)
+		(size 16.51 5.08)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "714785ba-3303-4d57-9c32-4841bec1e1c2")
+		(property "Sheetname" "LDR_Forward"
+			(at 151.13 75.4884 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ldr.kicad_sch"
+			(at 151.13 81.8646 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "analog_out" output
+			(at 151.13 78.74 180)
+			(uuid "a973aa6f-1e44-497b-a150-2bea04e7cac0")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 91.44 68.58)
 		(size 24.13 45.72)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -104,7 +374,7 @@
 		)
 		(uuid "920327e4-2a04-4564-ba11-3f3834c7006e")
 		(property "Sheetname" "ESP32"
-			(at 88.9 78.0284 0)
+			(at 91.44 67.8684 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -113,12 +383,32 @@
 			)
 		)
 		(property "Sheetfile" "ESP32.kicad_sch"
-			(at 88.9 125.0446 0)
+			(at 91.44 114.8846 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left top)
+			)
+		)
+		(pin "i2c_bus" bidirectional
+			(at 91.44 76.2 180)
+			(uuid "a201cb49-6d93-403a-ad63-06de04ad8eba")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "ldr_bus" input
+			(at 115.57 76.2 0)
+			(uuid "9dbd5d54-dd3f-4161-9ae6-4e18eeda0f50")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 		(instances
@@ -130,8 +420,60 @@
 		)
 	)
 	(sheet
-		(at 105.41 63.5)
-		(size 19.05 8.89)
+		(at 151.13 99.06)
+		(size 16.51 5.08)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "9f990fc4-e861-4ed4-b802-8259016bf14d")
+		(property "Sheetname" "LDR_Left"
+			(at 151.13 98.3484 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ldr.kicad_sch"
+			(at 151.13 104.7246 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "analog_out" output
+			(at 151.13 101.6 180)
+			(uuid "e175ff5e-4b67-4526-bf51-b9cb4fe1aca8")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 57.15 71.12)
+		(size 12.7 10.16)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -146,7 +488,7 @@
 		)
 		(uuid "cff9f0de-66a8-40e0-bfeb-91cf114478e3")
 		(property "Sheetname" "MPU-9255"
-			(at 105.41 62.7884 0)
+			(at 57.15 70.4084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -155,7 +497,7 @@
 			)
 		)
 		(property "Sheetfile" "mpu_9255.kicad_sch"
-			(at 105.41 72.9746 0)
+			(at 57.15 81.8646 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -163,10 +505,72 @@
 				(justify left top)
 			)
 		)
+		(pin "i2c_bus" bidirectional
+			(at 69.85 76.2 0)
+			(uuid "2d6b0350-c38b-45d0-a75e-6dcf13f49ef4")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
 		(instances
 			(project "mag"
 				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
 					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 151.13 110.49)
+		(size 16.51 5.08)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "f90e8bbb-8262-4c4d-81f6-93d124f86469")
+		(property "Sheetname" "LDR_Right"
+			(at 151.13 109.7784 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ldr.kicad_sch"
+			(at 151.13 116.1546 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "analog_out" output
+			(at 151.13 113.03 180)
+			(uuid "472a871d-a88e-4941-abba-6d8a529a2c73")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "8")
 				)
 			)
 		)
