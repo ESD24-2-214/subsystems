@@ -83,7 +83,6 @@ Vector sun_sensor_sat{
     .e2 = -0.7071f,
     .e3 = 0.0f,
 };
-Vector sun_sensor_normed_sat;
 
 // Magnetic Flux Density
 // Messured in MAG frame
@@ -95,7 +94,6 @@ Vector mag_sensor_sat{
     .e2 = 0.7071f * magnetric_flux_density_norm,
     .e3 = 0.0f,
 };
-Vector mag_sensor_normed_sat;
 
 Bivector magnetric_flux_density_sat = dual_vector_to_bivector(mag_sensor_sat);
 
@@ -115,7 +113,7 @@ Bivector sensor_rotation_angle_sat; // radian
 
 // Functions
 void measure();
-void normilize_measure();
+void cob_from_measure();
 Bivector pid(float K_p, float K_i, float K_d, Bivector error);
 Bivector actuator_test(Bivector torque);
 Bivector angle_from_torque(Bivector torque);
@@ -158,21 +156,8 @@ int main() {
 
     // "messure the sensors"
     measure();
-    // normilize messurements to make the basis have approximently the same size
-    normilize_measure();
-
-    // Change of basis
-    Vector third_basis_sat =
-        vector_cross(sun_sensor_normed_sat, mag_sensor_normed_sat);
-    // get change of basis matrix for vectors from WORLD to SAT
-    cob_vec_from_world_to_sat = matrix_from_vectors(
-        sun_sensor_normed_sat, mag_sensor_normed_sat, third_basis_sat);
-    // get change of basis matrix for vectors from SAT to WORLD
-    cob_vec_from_sat_to_world = matrix_inv(cob_vec_from_world_to_sat);
-
-    // get the dual of the change of basis matrices
-    cob_bivec_from_world_to_sat = matrix_dual(cob_vec_from_world_to_sat);
-    cob_bivec_from_sat_to_world = matrix_dual(cob_vec_from_sat_to_world);
+    // make change of basis matrix from messurements
+    cob_from_measure();
 
     // The inerita is defined in SAT
     // It is for bivectors
@@ -265,43 +250,80 @@ void measure() {
   mag_sensor_sat = rotate_vector(mag_sensor_sat, rotor);
 }
 
-void normilize_measure() {
+void cob_from_measure() {
 #ifdef DEBUG
-  printf("\nNormilize Measurements:\n");
+  printf("\nChange of Basis Matrix from Measurements:\n");
   printf("Sun Sensor: ");
   printf("{ e1: %f, e2: %f, e3: %f }\n", (double)sun_sensor_sat.e1,
          (double)sun_sensor_sat.e2, (double)sun_sensor_sat.e3);
+  printf("Mag Sensor: ");
+  printf(" { e1: %f, e2: %f, e3: %fe23 }\n", (double)mag_sensor_sat.e1,
+         (double)mag_sensor_sat.e2, (double)mag_sensor_sat.e3);
+
 #endif
+
+  // Get orthononormal basis set from the sunsensor and magnetometer
+  // The sunsensor is the e1 basis the rest is defined from there
+  //
+  // Plan:
+  // 1. normize sun
+  // 2. get e3 from the cross product of sun and mag
+  // 3. normilize e3
+  // 4. get e2 from cross product between e3 and sun
+  // (e2 should be normal)
+  // 6. make the change of basis matrix
+
   float sun_norm = sqrtf((sun_sensor_sat.e1 * sun_sensor_sat.e1) +
                          (sun_sensor_sat.e2 * sun_sensor_sat.e2) +
                          (sun_sensor_sat.e3 * sun_sensor_sat.e3));
 #ifdef DEBUG
   printf("Sun Sensor Norm: %f\n", (double)sun_norm);
 #endif
-  sun_sensor_normed_sat = scale_vector(sun_sensor_sat, 1.0f / sun_norm);
+  Vector e1_basis_sat = scale_vector(sun_sensor_sat, 1.0f / sun_norm);
 #ifdef DEBUG
   printf("Sun Sensor Normilized:");
-  printf("{ e1: %f,e2: %f,e3: %f }\n", (double)sun_sensor_normed_sat.e1,
-         (double)sun_sensor_normed_sat.e2, (double)sun_sensor_normed_sat.e3);
+  printf("{ e1: %f,e2: %f,e3: %f }\n", (double)e1_basis_sat.e1,
+         (double)e1_basis_sat.e2, (double)e1_basis_sat.e3);
 #endif
 
+  // e3
+  Vector e3_basis_not_normed_sat = vector_cross(e1_basis_sat, mag_sensor_sat);
+
+  float e3_basis_norm_sat =
+      sqrtf((e3_basis_not_normed_sat.e1 * e3_basis_not_normed_sat.e1) +
+            (e3_basis_not_normed_sat.e2 * e3_basis_not_normed_sat.e2) +
+            (e3_basis_not_normed_sat.e3 * e3_basis_not_normed_sat.e3));
 #ifdef DEBUG
-  printf("Mag Sensor: ");
-  printf(" { e1: %f, e2: %f, e3: %fe23 }\n", (double)mag_sensor_sat.e1,
-         (double)mag_sensor_sat.e2, (double)mag_sensor_sat.e3);
+  printf("World e3 basis Norm: %f\n", (double)e3_basis_norm_sat);
 #endif
-  float mag_norm = sqrtf((mag_sensor_sat.e1 * mag_sensor_sat.e1) +
-                         (mag_sensor_sat.e2 * mag_sensor_sat.e2) +
-                         (mag_sensor_sat.e3 * mag_sensor_sat.e3));
+
+  Vector e3_basis_sat =
+      scale_vector(e3_basis_not_normed_sat, 1.0f / e3_basis_norm_sat);
+
 #ifdef DEBUG
-  printf("Mag Sensor Norm: %f\n", (double)mag_norm);
+  printf("World e3 Normilized in SAT:");
+  printf("{ e1: %f,e2: %f,e3: %f }\n", (double)e3_basis_sat.e1,
+         (double)e3_basis_sat.e2, (double)e3_basis_sat.e3);
 #endif
-  mag_sensor_normed_sat = scale_vector(mag_sensor_sat, 1.0f / mag_norm);
+
+  Vector e2_basis_sat = vector_cross(e3_basis_sat, e1_basis_sat);
+
 #ifdef DEBUG
-  printf("Mag Sensor Normilized:");
-  printf("{ e1: %f, e2: %f, e3: %f }\n", (double)mag_sensor_normed_sat.e1,
-         (double)mag_sensor_normed_sat.e2, (double)mag_sensor_normed_sat.e3);
+  float e2_basis_norm_sat = sqrtf((e2_basis_sat.e1 * e2_basis_sat.e1) +
+                                  (e2_basis_sat.e2 * e2_basis_sat.e2) +
+                                  (e2_basis_sat.e3 * e2_basis_sat.e3));
+  printf("World e2 basis Norm: %f\n", (double)e2_basis_norm_sat);
 #endif
+
+  // get change of basis matrix for vectors from WORLD to SAT
+  cob_vec_from_world_to_sat =
+      matrix_from_vectors(e1_basis_sat, e2_basis_sat, e3_basis_sat);
+  // get change of basis matrix for vectors from SAT to WORLD
+  cob_vec_from_sat_to_world = matrix_inv(cob_vec_from_world_to_sat);
+
+  // get the dual of the change of basis matrices
+  cob_bivec_from_world_to_sat = matrix_dual(cob_vec_from_world_to_sat);
+  cob_bivec_from_sat_to_world = matrix_dual(cob_vec_from_sat_to_world);
 }
 
 Bivector pid(float K_p, float K_i, float K_d, Bivector error) {
