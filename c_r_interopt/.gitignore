@@ -5,6 +5,7 @@ tmp/
 *.out
 *.bin
 *.csv
+*.pdf
 
 .cache
 .projectile
