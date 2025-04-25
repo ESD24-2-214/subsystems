@@ -1,11 +1,12 @@
 #include <Arduino.h>
-#include <I2C.hpp>
+//#include <I2C.hpp>
 #include <MPU_I2C.hpp>
 #include <MPU_ADDRESS.hpp>
 #include <AK8963_ADDRESS.hpp>
+#include <DEBUG.hpp>
 
 
-MasterI2C MPU_I2C = MasterI2C(0);
+MasterI2C MPU_I2C = MasterI2C(0); // I2C object
 
 /* @brief This function is used to hard reset the MPU9255
 ** @note Resets the internal registers and restores the default settings.
@@ -43,10 +44,13 @@ void mag_resolution_config(mag_resolution mode){
   default:
     break;
   }
-
-  //mode ? write(AK8963_ADDRESS, CNTL1, B00010110) : write(AK8963_ADDRESS, ASTC, B00010010);
 }
 
+/* @brief This function is used to configure the measurement mode of the magnometer
+** @param mode: the measurement mode to set
+** @note param: MEAS_MODE1, MEAS_MODE2, SINGLE_MEASUREMENT, POWER_DOWN, EXTERNAL_TRIGGER, SELF_TEST
+** @note This function is used to set bits 0, 1, 2 and 3 (0000xxxx) of the CNTL1 register in AK8963 
+*/
 uint8_t mag_meas_config(mag_meas_mode mode){
   uint8_t bits = 0b0000;
   switch (mode)
@@ -83,7 +87,6 @@ uint8_t mag_meas_config(mag_meas_mode mode){
   MPU_I2C.endTransmission();
   return 0;
 }
-
 
 /* @brief This function is used to set the bit of a register to a specific value
 ** @param unit_addr: the I2C address of the unit
@@ -142,11 +145,9 @@ void read_accelerometer(Vector *acc_data)
 {
   uint8_t data[6];
   read(MPU9255_ADDRESS, ACCEL_XOUT_H, data, 6);
-
   acc_data -> x = (int16_t)(data[0] << 8 | data[1]);
   acc_data -> y = (int16_t)(data[2] << 8 | data[3]);
   acc_data -> z = (int16_t)(data[4] << 8 | data[5]);
-  
 }
 
 /* @brief This function is used to read the accelerometer data
@@ -156,11 +157,11 @@ void read_gryroscope(Vector *gyro_data)
 {
   uint8_t data[6];
   read(MPU9255_ADDRESS, GYRO_XOUT_H, data, 6);
-
   gyro_data -> x = (int16_t)(data[0] << 8 | data[1]);
   gyro_data -> y = (int16_t)(data[2] << 8 | data[3]);
   gyro_data -> z = (int16_t)(data[4] << 8 | data[5]);
 }
+
 /* @brief This function is used to read the magnetometer data
 ** @param mag_data: Must be Vector struct
 */
@@ -168,12 +169,16 @@ void read_magnetometer(Vector *mag_data)
 {
   uint8_t data[6];
   read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
-
   mag_data -> x = (int16_t)(data[1] << 8 | data[0]);
   mag_data -> y = (int16_t)(data[3] << 8 | data[2]);
   mag_data -> z = (int16_t)(data[5] << 8 | data[4]);
 }
 
+/* @brief This function is used to read the data from the sensor and scale it
+** @param Vec: the sensorvector to read data to
+** @note remember ti initialize the sensorvector before using this function
+** @note return: 0 if success, -1 if NULL pointer passed, 1 if sensor is unknown, 2 if scale factor is unknown
+*/
 int8_t read_data(SensorVector *Vec){
   if(Vec == NULL){
     DEBUG("NULL pointer passed to read_data", " ");
@@ -229,6 +234,7 @@ void I2Cbus_SCCAN(void){
   }
   Serial.println(">>>Scanning I2C bus complete<<<");
 }
+
 /* @brief This function is used to set the AK8963 to self-test mode
 */
 void magnotometer_selftest(void){
@@ -241,15 +247,14 @@ void magnotometer_softreset(void){
   set_bit_config(AK8963_ADDRESS, CNTL2, true, 0); // Soft reset the AK8963
 }
 
-/*
-* @brief This function is used to scale the vector by a factor
+/*@brief This function is used to scale the vector by a factor
 * @param Vec: the vector to scale
 * @param scale_factor: the factor to scale the vector by
 */
 void scale(Vector *Vec, double scale_factor){
-  Vec -> x = Vec -> x * scale_factor;
-  Vec -> y = Vec -> y * scale_factor;
-  Vec -> z = Vec -> z * scale_factor;
+  Vec -> x = ((Vec -> x) * scale_factor);
+  Vec -> y = ((Vec -> y) * scale_factor);
+  Vec -> z = ((Vec -> z) * scale_factor);
 }
 
 /*
@@ -288,6 +293,12 @@ int8_t factorScale(SensorVector *Vec){
   return 0;
 }
 
+/* @brief This function is used to initialize the sensor vector
+** @param Vec: the vector to initialize
+** @param sensor_t: the type of sensor to initialize
+** @param scale_factor: the scale factor to set
+** @note return: 0 if success, -1 if NULL pointer passed, 1 if sensor is unknown, 2 if scale factor is unknown 
+*/
 int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor){
   if(Vec == NULL){
     DEBUG("NULL pointer passed to initSensorVector", " ");
@@ -324,6 +335,12 @@ int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor)
   return 0;
 }
 
+/* @brief This function is used to set the 2 bits of a register to a specific value
+** @param unit_addr: the I2C address of the unit
+** @param local_addr: the address of the register
+** @param bit2: the value to set the bits to
+** @param bitpos: the position of the bits to set. If bitpos = 0, => (000000xx)
+*/
 void set_2bit(uint8_t unit_addr, uint8_t local_addr, uint8_t bit2, uint8_t bitpos){
   MPU_I2C.beginTransmission(unit_addr);
   MPU_I2C.write(local_addr);
@@ -337,6 +354,11 @@ void set_2bit(uint8_t unit_addr, uint8_t local_addr, uint8_t bit2, uint8_t bitpo
 MPU_I2C.endTransmission();
 }
 
+/* @brief This function is used to set the full scale range of the gyroscope
+** @param range: the full scale range to set
+** @note GFS_250: 250 degrees/sec, GFS_500: 500 degrees/sec, GFS_1000: 1000 degrees/sec, GFS_2000: 2000 degrees/sec
+** @note This function is used to set bits 3 and 4 of the GYRO_CONFIG register (000xx000)
+*/
 void gyro_fs_sel(gyro_full_scale_range range){
   uint8_t bit2 = 0b00;
   switch (range)
@@ -359,6 +381,11 @@ void gyro_fs_sel(gyro_full_scale_range range){
   set_2bit(MPU9255_ADDRESS, GYRO_CONFIG, bit2, 3);
 }
 
+/* @brief This function is used to set the full scale range of the accelerometer
+** @param range: the full scale range to set
+** @note AFS_2G: 2g, AFS_4G: 4g, AFS_8G: 8g, AFS_16G: 16g
+** @note This function is used to set bits 3 and 4 of the ACCEL_CONFIG register (000xx000)
+*/
 void accel_fs_sel(acc_full_scale_range range){
   uint8_t bit2 = 0b00;
   switch (range)
@@ -381,4 +408,60 @@ void accel_fs_sel(acc_full_scale_range range){
   set_2bit(MPU9255_ADDRESS, ACCEL_CONFIG, bit2, 3);
 }
 
+/* @brief This function is used to print the data of the vector
+** @param Vec: the vector to print
+*/
+void dataPrint(Vector *Vec){
+  Serial.println("x, y, z,");
+  Serial.print((Vec -> x));
+  Serial.print(", ");
+  Serial.print((Vec -> y));
+  Serial.print(", ");
+  Serial.println((Vec -> z));
+}
 
+/* @brief This function is used to print the data of important config registers of the AK8963
+** @note This function is used for debugging purposes only should be removed in final code
+** @note registers are CNTL1, CNTL2, ASTC, ST1, ST2
+*/ 
+void mag_debug_print(void){
+  uint8_t data_byte = 0;
+  read(AK8963_ADDRESS, CNTL1, &data_byte, 1);
+  Serial.print("CNTL1 : ");
+  Serial.println(data_byte, BIN);
+  read(AK8963_ADDRESS, CNTL2, &data_byte, 1);
+  Serial.print("CNTL2 : ");
+  Serial.println(data_byte, BIN);
+  read(AK8963_ADDRESS, ASTC, &data_byte, 1);
+  Serial.print("ASTC : ");
+  Serial.println(data_byte, BIN);
+  read(AK8963_ADDRESS, ST1, &data_byte, 1);
+  Serial.print("ST1 : ");
+  Serial.println(data_byte, BIN);
+  read(AK8963_ADDRESS, ST2, &data_byte, 1);
+  Serial.print("ST2 : ");
+  Serial.println(data_byte, BIN);
+}
+
+/* @brief This function is used to print the data of important config registers of the MPU9255
+** @note This function is used for debugging purposes only should be removed in final code
+** @note registers are PWR_MGMT_1, PWR_MGMT_2, CONFIG, ACCEL_CONFIG, GYRO_CONFIG
+*/
+void mpu_debug_print(void){
+  uint8_t data_byte = 0;
+  read(MPU9255_ADDRESS, PWR_MGMT_1, &data_byte, 1);
+  Serial.print("PWR_MGMT_1 : ");
+  Serial.println(data_byte, BIN);
+  read(MPU9255_ADDRESS, PWR_MGMT_2, &data_byte, 1);
+  Serial.print("PWR_MGMT_2 : ");
+  Serial.println(data_byte, BIN);
+  read(MPU9255_ADDRESS, MPU_CONFIG, &data_byte, 1);
+  Serial.print("CONFIG : ");
+  Serial.println(data_byte, BIN);
+  read(MPU9255_ADDRESS, ACCEL_CONFIG, &data_byte, 1);
+  Serial.print("ACCEL_CONFIG : ");
+  Serial.println(data_byte, BIN);
+  read(MPU9255_ADDRESS, GYRO_CONFIG, &data_byte, 1);
+  Serial.print("GYRO_CONFIG : ");
+  Serial.println(data_byte, BIN);
+}

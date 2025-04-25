@@ -3,11 +3,12 @@ extern "C" {
     #include <string.h>
     #include <inttypes.h>
     }
-    #include <esp32-hal-log.h>
-    #include "esp32-hal-i2c.h"
-    #include "esp32-hal-i2c-slave.h"
-    #include "I2C.hpp"
-    #include "Arduino.h"
+    //#include <esp32-hal-log.h>
+    #include <I2C.hpp>
+    #include <esp32-hal-i2c.h>
+    #include <esp32-hal-i2c-slave.h>
+    #include <semaph.hpp>
+    #include <Arduino.h>
     
     
 

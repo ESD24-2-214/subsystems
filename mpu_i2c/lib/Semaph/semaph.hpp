@@ -1,14 +1,14 @@
+#ifndef SEMAPH
+#define SEMAPH
 #include <Arduino.h>
 #include <Config.hpp>
+#include <DEBUG.hpp>
 #if !CONFIG_DISABLE_HAL_LOCKS
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #endif
 
-
-#ifndef SEMAPH
-#define SEMAPH
 
 #if !CONFIG_DISABLE_HAL_LOCKS
     bool create_lock(SemaphoreHandle_t *lock);

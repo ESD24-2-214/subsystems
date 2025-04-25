@@ -13,7 +13,7 @@
 #endif
 #include "Stream.h"
 
-#include <Config.hpp>
+#include <DEBUG.hpp>
 #include <semaph.hpp>
 
 #define unsigned int size_t
@@ -85,18 +85,10 @@ public:
 
     uint8_t requestData(size_t rsize, bool writeRead, uint16_t address=0);
 
-
-
-
-
     int available(void);
     int read(void);
     int peek(void);
     void flush(void);
-
-
 };
-
-
 
 #endif // I2C_Hpp
