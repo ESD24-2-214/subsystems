@@ -24,6 +24,24 @@
 		(uuid "650481c9-6fa7-4583-b76a-129af1a96ec9")
 	)
 	(bus_entry
+		(at 135.89 87.63)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "68f2da4c-54bb-4eca-830c-7ecbb27000fc")
+	)
+	(bus_entry
+		(at 135.89 110.49)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6be016cc-99e9-419e-a416-43655de14150")
+	)
+	(bus_entry
 		(at 135.89 76.2)
 		(size 2.54 2.54)
 		(stroke
@@ -39,7 +57,25 @@
 			(width 0)
 			(type default)
 		)
+		(uuid "dee90fe7-66f6-4843-b72d-71e966c0d779")
+	)
+	(bus_entry
+		(at 135.89 99.06)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
 		(uuid "ebf3362c-87e9-4858-9c32-3f819fefae5c")
+	)
+	(bus_entry
+		(at 135.89 76.2)
+		(size 2.54 2.54)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f33081fb-6b38-4177-853e-6f0addeaeb42")
 	)
 	(bus
 		(pts
@@ -71,6 +107,16 @@
 		)
 		(uuid "4280ca48-a5d5-4bc7-a0a6-e0e393b741a8")
 	)
+	(bus
+		(pts
+			(xy 73.66 96.52) (xy 91.44 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "73ad87e3-989a-4aff-8496-bea5241a31c5")
+	)
 	(wire
 		(pts
 			(xy 138.43 78.74) (xy 151.13 78.74)
@@ -100,6 +146,16 @@
 			(type default)
 		)
 		(uuid "82e80bb0-826f-4912-b24b-fa66e3e25aa4")
+	)
+	(bus
+		(pts
+			(xy 73.66 104.14) (xy 91.44 104.14)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "97a1d1a2-1cee-4011-8e49-b0a70883fb7a")
 	)
 	(wire
 		(pts
@@ -131,27 +187,7 @@
 		)
 		(uuid "e240efdb-d823-4094-a18c-d5b48a926b4d")
 	)
-	(label "LDR_Left"
-		(at 138.43 101.6 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2c4c23e0-adab-403e-b5a5-920e4d183427")
-	)
-	(label "LDR_Back"
-		(at 138.43 90.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6098e5df-688d-4562-aace-638800b676fb")
-	)
-	(label "LDR_Forward"
+	(label "LDR.Forward"
 		(at 138.43 78.74 0)
 		(effects
 			(font
@@ -159,9 +195,29 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "a3a92987-623d-4b1b-a6e7-dcf5c1086cf2")
+		(uuid "33cfaf63-0202-406f-b8ed-cc9ab4a74064")
 	)
-	(label "LDR_Right"
+	(label "LDR{Forward Back Left Right}"
+		(at 116.84 76.2 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3e768d43-8dc8-4289-bdc7-f7d32b80d0c4")
+	)
+	(label "LDR.Back"
+		(at 138.43 90.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5e97b6d5-e305-46f1-9a19-206ca3a15d6e")
+	)
+	(label "LDR.Right"
 		(at 138.43 113.03 0)
 		(effects
 			(font
@@ -169,11 +225,21 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "eed702c7-1dcc-4458-834d-45c90fcfb3e6")
+		(uuid "826c1c34-e070-4ed7-862e-98050ff8d5eb")
+	)
+	(label "LDR.Left"
+		(at 138.43 101.6 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b798c0c2-7582-4776-b399-5ef01920c2ed")
 	)
 	(sheet
-		(at 30.48 109.22)
-		(size 36.83 19.05)
+		(at 57.15 91.44)
+		(size 16.51 19.05)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -188,7 +254,7 @@
 		)
 		(uuid "021973d6-cb49-4352-a4ea-b5027e022f92")
 		(property "Sheetname" "ACS_mag"
-			(at 30.48 108.5084 0)
+			(at 57.15 90.7284 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -197,7 +263,7 @@
 			)
 		)
 		(property "Sheetfile" "acs_magnetorquer.kicad_sch"
-			(at 30.48 128.8546 0)
+			(at 57.15 111.0746 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -205,29 +271,9 @@
 				(justify left top)
 			)
 		)
-		(pin "mag1_neg" input
-			(at 30.48 123.19 180)
-			(uuid "f9c306ab-0ba6-4e19-81f6-bce77c22902e")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "mag1_pos" input
-			(at 30.48 113.03 180)
-			(uuid "875e25cc-05e7-42c7-85f8-838181e405c0")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "mag2_neg" input
-			(at 67.31 123.19 0)
-			(uuid "a572eeed-3963-43ff-a951-21607e19d30c")
+		(pin "mag1_bus" input
+			(at 73.66 96.52 0)
+			(uuid "45b1a91d-a554-41f1-99e6-ec2720c35387")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -235,9 +281,9 @@
 				(justify right)
 			)
 		)
-		(pin "mag2_pos" input
-			(at 67.31 113.03 0)
-			(uuid "bd95a296-89a9-4c59-95c7-26a2d6ac2c25")
+		(pin "mag2_bus" input
+			(at 73.66 104.14 0)
+			(uuid "cf58c180-6da4-4106-83ce-371daab1f8ca")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -411,6 +457,26 @@
 				(justify right)
 			)
 		)
+		(pin "mag1_bus" output
+			(at 91.44 96.52 180)
+			(uuid "a9a37138-9bf1-43e0-82f9-b0ab980e5a5e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "mag2_bus" output
+			(at 91.44 104.14 180)
+			(uuid "7113a61c-7f21-4e36-86de-03f89dcbcae1")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
 		(instances
 			(project "mag"
 				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
@@ -473,7 +539,7 @@
 	)
 	(sheet
 		(at 57.15 71.12)
-		(size 12.7 10.16)
+		(size 16.51 10.16)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -506,7 +572,7 @@
 			)
 		)
 		(pin "i2c_bus" bidirectional
-			(at 69.85 76.2 0)
+			(at 73.66 76.2 0)
 			(uuid "2d6b0350-c38b-45d0-a75e-6dcf13f49ef4")
 			(effects
 				(font
@@ -519,6 +585,48 @@
 			(project "mag"
 				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
 					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 91.44 43.18)
+		(size 24.13 13.97)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "eb4b2821-746d-4b25-ad4a-ccbed5b39359")
+		(property "Sheetname" "Power"
+			(at 91.44 42.4684 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 91.44 57.7346 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "mag"
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733"
+					(page "9")
 				)
 			)
 		)
