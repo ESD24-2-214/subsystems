@@ -1,5 +1,8 @@
 // defining all intern addresses for the AK8963 magnotometer sensor
 // #define AK8963_ADDRESS 0x0C
+#ifndef AK8963_ADDRESS_HPP
+#define AK8963_ADDRESS_HPP
+
 #define WIA 0x00
 #define INFO 0x01
 #define ST1 0x02
@@ -16,3 +19,5 @@
 #define ASAX 0x10
 #define ASAY 0x11
 #define ASAZ 0x12
+
+#endif // AK8963_ADDRESS_HPP

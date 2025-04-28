@@ -1,86 +1,85 @@
 #include <Arduino.h>
-#include <Wire.h>
 #include <MPU_I2C.hpp>
+#include <Config.hpp>
+#include <AK8963_ADDRESS.hpp>
+#include <MPU_ADDRESS.hpp>
 #define ClockSpeed 400000 // 400kHz
 
 #define SDA 18 // Signal Data Line pin
 #define SCL 17 // Signal Clock Line pin
-void debug_print(void);
 
+const mag_resolution mag_res = BIT_16; // mag resolution
+const mag_meas_mode mag_mode = MEAS_MODE1; // mag mode
+const gyro_full_scale_range gyro_fs = GFS_500; // gyro full scale range
+const acc_full_scale_range accel_fs = AFS_2G; // accel full scale range
+const double gyro_scale = gyro_scale_factor500; // gyro scale factor
+const double accel_scale = acc_scale_factor2g; // accel scale factor
+const double mag_scale = mag_scale_factor2; // mag scale factor
+SensorVector gyro_data;
+SensorVector acc_data;
+SensorVector mag_data;
+
+void read_sens_vector(SensorVector *Vec);
 
 void setup() {
 Serial.begin(115200);
 while (!Serial){};
-
-Wire.begin(SDA, SCL);
-Wire.setClock(ClockSpeed);
-delay(2000);
-
-hard_reset_MPU9255(); // Hard reset the MPU9255
-delay(1000);
-magnometer_bypass(true);
-delay(2000);
-
-I2Cbus_SCCAN();
-delay(5000);
-
-magnotometer_softreset(); // Soft reset the magnetometer
-delay(2000);
-
-resolution_config(FULL); // Set the measure mode to half
-
+delay(5000); Serial.println("YO!!");
+if(MPU_I2C.begin(SDA, SCL, ClockSpeed) == false){
+  Serial.println("I2C begin Failed!");
 }
 
-Vector gyro_data;
-Vector acc_data;
-Vector mag_data;
-uint8_t data[6];
-uint8_t data_byte;
+bypass_to_magnometer(true);
+I2Cbus_SCCAN();
+delay(2000);
 
-void loop() {  // testing the magnometer
-  read(AK8963_ADDRESS, CNTL1, &data_byte, 1);
-  Serial.print("CNTL1 : ");
-  Serial.println(data_byte, BIN);
-  read(AK8963_ADDRESS, CNTL2, &data_byte, 1);
-  Serial.print("CNTL2 : ");
-  Serial.println(data_byte, BIN);
-  read(AK8963_ADDRESS, ASTC, &data_byte, 1);
-  Serial.print("ASTC : ");
-  Serial.println(data_byte, BIN);
+mag_resolution_config(mag_res);
+mag_meas_config(mag_mode);
+gyro_fs_sel(gyro_fs);
+accel_fs_sel(accel_fs);
+write(AK8963_ADDRESS, ASTC , 0x00); // Set clock source to PLL with X axis gyroscope reference
 
-  read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
-  for (uint8_t i = 0; i < 6; i++)
-  {
-    Serial.print("Data ");
-    Serial.print(i);
-    Serial.print(" : ");
-    Serial.println(data[i], BIN);
-  }
-  Serial.println();
+initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
+initSensorVector(&acc_data, ACCELEROMETER, accel_scale);
+initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
+read_sens_vector(&gyro_data);
+read_sens_vector(&acc_data);
+read_sens_vector(&mag_data);
+delay(5000);
+
+
+}
+void loop() {
+  read_data(&gyro_data);
+  read_data(&acc_data);
+  read_data(&mag_data);
   
-  read_magnetometer(&mag_data);
-  Serial.print("Magnetometer X : ");
-  Serial.println(mag_data.x);
-  Serial.print("Magnetometer Y : ");
-  Serial.println(mag_data.y);
-  Serial.print("Magnetometer Z : ");
-  Serial.println(mag_data.z);
-  Serial.println();
+  Serial.println("mag: ");
+  dataPrint(&mag_data.vector);
+  Serial.println("acc: ");
+  dataPrint(&acc_data.vector);
+  Serial.println("gyro: ");
+  dataPrint(&gyro_data.vector);
+  
+  //mpu_debug_print();
+  //mag_debug_print();
+
   delay(1000);
 }
 
-
-
-void debug_print(void){
-  read(AK8963_ADDRESS, CNTL1, &data_byte, 1);
-  Serial.print("CNTL1 : ");
-  Serial.println(data_byte, BIN);
-  read(AK8963_ADDRESS, CNTL2, &data_byte, 1);
-  Serial.print("CNTL2 : ");
-  Serial.println(data_byte, BIN);
-  read(AK8963_ADDRESS, ASTC, &data_byte, 1);
-  Serial.print("ASTC : ");
-  Serial.println(data_byte, BIN);
+void read_sens_vector(SensorVector *Vec){
+  Serial.print(Vec->sensor);
+  Serial.print(", ");
+  Serial.print(Vec->unit_addr, HEX);
+  Serial.print(", ");
+  Serial.print(Vec->local_addr, HEX);
+  Serial.print(", ");
+  Serial.print(Vec->vector.x);
+  Serial.print(", ");
+  Serial.print(Vec->vector.y);
+  Serial.print(", ");
+  Serial.print(Vec->vector.z);
+  Serial.print(", ");
+  Serial.println(Vec->scale_factor, 6);
 }
-
 

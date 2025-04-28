@@ -1,8 +1,6 @@
 // defining all the addresses for the MPU9255 sensor
-
 #ifndef MPU_ADDRESS_HPP
 #define MPU_ADDRESS_HPP
-#endif
 
 // Config registers for Gyroscope and Accelerometer offsets
 #define XG_OFFSET_H 0x0D
@@ -18,7 +16,6 @@
 #define YA_OFFSET_L 0x7B
 #define ZA_OFFSET_H 0x7D
 #define ZA_OFFSET_L 0x7E
-
 #define INT_PIN_CFG 0x37 // Interrupt configuration, set Bit1 to endable bypassmode
 
 // Data registers for Gryoscope, Accelerometer and Temperature
@@ -39,3 +36,9 @@
 
 #define PWR_MGMT_1 0x6B // Power Management 1 register
 #define PWR_MGMT_2 0x6C // Power Management 2 register
+#define MPU_CONFIG 0x1A // Configuration register
+#define GYRO_CONFIG 0x1B // Gyroscope configuration register
+#define ACCEL_CONFIG 0x1C // Accelerometer configuration register
+#define ACCEL_CONFIG2 0x1D // Accelerometer configuration register 2
+
+#endif // MPU_ADDRESS_HPP
