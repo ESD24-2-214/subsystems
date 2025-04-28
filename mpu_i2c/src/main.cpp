@@ -29,12 +29,10 @@ if(MPU_I2C.begin(SDA, SCL, ClockSpeed) == false){
   Serial.println("I2C begin Failed!");
 }
 
-delay(2000);
 bypass_to_magnometer(true);
 I2Cbus_SCCAN();
 delay(2000);
-//magnotometer_softreset();
-delay(1000);
+
 mag_resolution_config(mag_res);
 mag_meas_config(mag_mode);
 gyro_fs_sel(gyro_fs);
