@@ -258,6 +258,7 @@ uint8_t MasterI2C::transmitWrite(){
         case ESP_ERR_TIMEOUT: return 5;
         default: break;
     }
+    DEBUG("i2cWrite returned Error: ", err);
     return 4;
 }
 

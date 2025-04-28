@@ -164,11 +164,19 @@ void read_gryroscope(Vector *gyro_data)
 
 /* @brief This function is used to read the magnetometer data
 ** @param mag_data: Must be Vector struct
+** @note If the magnetic sensor overflow the data is invalid and we keep the last data
 */
 void read_magnetometer(Vector *mag_data)
 {
+  uint8_t stat;
   uint8_t data[6];
   read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
+  read(AK8963_ADDRESS, ST2, &stat, 1); // Read ST2 register to clear the data ready bit
+  if (stat & 0b00001000) // Check for magnetic sensor overflow i.e. the data is invalid
+  {
+    DEBUG("Magnetic sensor overflow", " ");  
+    return; // If invalid we keep the last data
+  }
   mag_data -> x = (int16_t)(data[1] << 8 | data[0]);
   mag_data -> y = (int16_t)(data[3] << 8 | data[2]);
   mag_data -> z = (int16_t)(data[5] << 8 | data[4]);
@@ -235,10 +243,19 @@ void I2Cbus_SCCAN(void){
   Serial.println(">>>Scanning I2C bus complete<<<");
 }
 
-/* @brief This function is used to set the AK8963 to self-test mode
+/* @brief This function is used to make a self-test on the AK8963
 */
 void magnotometer_selftest(void){
-write(AK8963_ADDRESS, CNTL1, B00011000);
+SensorVector mag_data;
+mag_meas_config(POWER_DOWN);
+set_bit_config(AK8963_ADDRESS, ASTC, true, 6); // Soft reset the AK8963
+mag_meas_config(SELF_TEST);
+delay(1000);
+read_data(&mag_data);
+Serial.println("mag: ");
+dataPrint(&mag_data.vector);
+set_bit_config(AK8963_ADDRESS, ASTC, false, 6);
+mag_meas_config(POWER_DOWN);
 }
 
 /* @brief This function is used to soft reset the AK8963
