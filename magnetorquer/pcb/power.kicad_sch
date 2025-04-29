@@ -307,6 +307,148 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Regulator_Linear:L7805"
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "U"
+				(at -3.81 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "L7805"
+				(at 0 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.635 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+						(italic yes)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf"
+				(at 0 -1.27 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "Voltage Regulator 1.5A Positive"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "TO?252* TO?263* TO?220*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "L7805_0_1"
+				(rectangle
+					(start -5.08 1.905)
+					(end 5.08 -5.08)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(symbol "L7805_1_1"
+				(pin power_in line
+					(at -7.62 0 0)
+					(length 2.54)
+					(name "IN"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_in line
+					(at 0 -7.62 90)
+					(length 2.54)
+					(name "GND"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin power_out line
+					(at 7.62 0 180)
+					(length 2.54)
+					(name "OUT"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:+5V"
 			(power)
 			(pin_numbers
@@ -660,10 +802,22 @@
 		)
 	)
 	(junction
+		(at 104.14 67.31)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "4b85843f-6d0a-4614-b1ff-b31db3a22d7c")
+	)
+	(junction
 		(at 78.74 73.66)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "59c6512b-5f32-4661-9574-bb7231f73b0b")
+	)
+	(junction
+		(at 78.74 67.31)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "71f0f84b-ad65-45a0-a298-4899e599490f")
 	)
 	(junction
 		(at 78.74 81.28)
@@ -689,13 +843,23 @@
 	)
 	(wire
 		(pts
-			(xy 104.14 68.58) (xy 104.14 73.66)
+			(xy 104.14 66.04) (xy 104.14 67.31)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "21d29dea-db4f-4862-a44d-bc06663db75d")
+	)
+	(wire
+		(pts
+			(xy 92.71 74.93) (xy 92.71 81.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "33cd703d-e35e-4fc1-832e-403279f94c06")
 	)
 	(wire
 		(pts
@@ -716,6 +880,16 @@
 			(type default)
 		)
 		(uuid "56f18263-79f0-47ef-bcfe-fec3f7ab8b47")
+	)
+	(wire
+		(pts
+			(xy 78.74 67.31) (xy 78.74 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "59b9c3a8-85d7-4911-96a7-300a8bfb6010")
 	)
 	(wire
 		(pts
@@ -749,7 +923,17 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 68.58) (xy 78.74 73.66)
+			(xy 100.33 67.31) (xy 104.14 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "73d6b497-206c-4aa1-b7b8-137955caec2d")
+	)
+	(wire
+		(pts
+			(xy 78.74 66.04) (xy 78.74 67.31)
 		)
 		(stroke
 			(width 0)
@@ -767,9 +951,29 @@
 		)
 		(uuid "b600c9b1-3541-4932-8903-6d3fb4f707b9")
 	)
+	(wire
+		(pts
+			(xy 104.14 67.31) (xy 104.14 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f06f3d3d-efff-4525-95c8-122298ddc7d7")
+	)
+	(wire
+		(pts
+			(xy 78.74 67.31) (xy 85.09 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f109a4ca-1369-4d18-884e-1562be3dcee0")
+	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 104.14 68.58 0)
+		(at 104.14 66.04 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -778,7 +982,7 @@
 		(fields_autoplaced yes)
 		(uuid "0247df5f-bc9b-49b4-b5e1-bfdbb1f8ec46")
 		(property "Reference" "#PWR010"
-			(at 104.14 72.39 0)
+			(at 104.14 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -787,7 +991,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 104.14 63.5 0)
+			(at 104.14 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -795,7 +999,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 104.14 68.58 0)
+			(at 104.14 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -804,7 +1008,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 104.14 68.58 0)
+			(at 104.14 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -813,7 +1017,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 104.14 68.58 0)
+			(at 104.14 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -852,7 +1056,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0.22uF"
+		(property "Value" "0.47uF"
 			(at 82.55 78.7399 0)
 			(effects
 				(font
@@ -861,7 +1065,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:C_Rect_L7.0mm_W2.5mm_P5.00mm"
+		(property "Footprint" "Capacitor_THT:C_Rect_L7.0mm_W4.5mm_P5.00mm"
 			(at 79.7052 81.28 0)
 			(effects
 				(font
@@ -931,7 +1135,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:C_Rect_L7.0mm_W2.5mm_P5.00mm"
+		(property "Footprint" "Capacitor_THT:C_Rect_L7.0mm_W2.0mm_P5.00mm"
 			(at 105.1052 81.28 0)
 			(effects
 				(font
@@ -999,7 +1203,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+		(property "Footprint" "TerminalBlock:TerminalBlock_MaiXu_MX126-5.0-02P_1x02_P5.00mm"
 			(at 58.42 78.74 0)
 			(effects
 				(font
@@ -1108,17 +1312,89 @@
 		)
 	)
 	(symbol
-		(lib_id "power:VCC")
-		(at 78.74 68.58 0)
+		(lib_id "Regulator_Linear:L7805")
+		(at 92.71 67.31 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
+		(uuid "d4de4914-c607-41bc-9a51-926a1c58043b")
+		(property "Reference" "U4"
+			(at 92.71 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "L7805"
+			(at 92.71 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabDown"
+			(at 93.345 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf"
+			(at 92.71 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"
+			(at 92.71 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "b900860a-741f-4093-98af-b95a403d0499")
+		)
+		(pin "2"
+			(uuid "4e1599ab-a709-4957-9129-015e42de305a")
+		)
+		(pin "1"
+			(uuid "82c3a0bc-ed81-4e66-ac7c-f462e448da63")
+		)
+		(instances
+			(project ""
+				(path "/14c04de7-71ee-4f20-9e6e-041dbb035733/eb4b2821-746d-4b25-ad4a-ccbed5b39359"
+					(reference "U4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:VCC")
+		(at 78.74 66.04 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(uuid "ebfccbe5-0e5b-4a77-a101-25195051687d")
 		(property "Reference" "#PWR08"
-			(at 78.74 72.39 0)
+			(at 78.74 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1127,7 +1403,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 78.74 63.5 0)
+			(at 78.74 60.706 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1135,7 +1411,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 78.74 68.58 0)
+			(at 78.74 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1144,7 +1420,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 78.74 68.58 0)
+			(at 78.74 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1153,7 +1429,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VCC\""
-			(at 78.74 68.58 0)
+			(at 78.74 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
