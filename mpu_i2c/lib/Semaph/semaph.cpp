@@ -22,8 +22,9 @@ bool create_lock(SemaphoreHandle_t *lock){
 
 /* @brief This function is used to acquire a semaphore lock
 ** @param lock: the semaphore handle
-** @note This function will block until the lock is acquired
-** @note This function will return false if the lock is NULL or if the lock could not be acquired
+** @note This function will block until the lock is acquired.
+** @note This function will return false if the lock is NULL or if the lock could not be acquired.
+** @note The block time/wait time for acquireing the lock is set to max (portMAX_DELAY).
 */
 bool acquire_lock(SemaphoreHandle_t lock){
     if(lock == NULL || (xSemaphoreTake(lock, portMAX_DELAY) != pdTRUE) ){

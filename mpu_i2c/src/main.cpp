@@ -5,14 +5,18 @@
 #include <MPU_ADDRESS.hpp>
 #define ClockSpeed 400000 // 400kHz
 
-#define SDA 18 // Signal Data Line pin
-#define SCL 17 // Signal Clock Line pin
+// #define SDA 18 // Signal Data Line pin
+// #define SCL 17 // Signal Clock Line pin
+
+#define SDA 8 // Signal Data Line pin
+#define SCL 9 // Signal Clock Line pin
 
 const mag_resolution mag_res = BIT_16; // mag resolution
 const mag_meas_mode mag_mode = MEAS_MODE1; // mag mode
 const gyro_full_scale_range gyro_fs = GFS_500; // gyro full scale range
 const acc_full_scale_range accel_fs = AFS_2G; // accel full scale range
 const double gyro_scale = gyro_scale_factor500; // gyro scale factor
+
 const double accel_scale = acc_scale_factor2g; // accel scale factor
 const double mag_scale = mag_scale_factor2; // mag scale factor
 SensorVector gyro_data;
