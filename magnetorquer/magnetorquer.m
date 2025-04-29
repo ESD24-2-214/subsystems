@@ -1,6 +1,6 @@
 
 ## \[ \overset\Rightarrow{\mu} = NI\overset\Rightarrow{A} \]
-windings = 100;
+windings = 150;
 radius_inductor = 40*10^(-3); ## meter
 area_inductor = pi * radius_inductor ^2; ## meter^2
 voltage = 8; ## volt
