@@ -49,4 +49,6 @@ Rotor rotor_form_halv_angle_bivector(Bivector half_angle);
 Vector rotate_vector(Vector vector, Rotor rotor);
 Bivector rotate_bivector(Bivector bivector, Rotor rotor);
 
+int compare_float(const void *a, const void *b);
+
 #endif // MATH_STUFF_H_

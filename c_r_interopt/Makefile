@@ -8,13 +8,13 @@ CXXFLAGS += -I$(shell nix eval --raw nixpkgs#stdenv.cc.cc)/include
 
 
 compile_c_r:
-	clang++ c_r.cpp math_stuff.cpp -o c_r.bin -std=c++20 -g3 \
+	clang++ c_r.cpp math_stuff.cpp loop.cpp -o c_r.bin -std=c++20 -g3 \
 	-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-unused-parameter \
 	-Wno-unused-function -Wno-sign-conversion -fsanitize=undefined -fsanitize-trap -pedantic
 	./c_r.bin
 
 compile_control:
-	clang++ control.cpp math_stuff.cpp -o control.bin -std=c++20 -g3 \
+	clang++ control.cpp math_stuff.cpp  -o control.bin -std=c++20 -g3 \
 	-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-unused-parameter \
 	-Wno-unused-function -Wno-sign-conversion -fsanitize=undefined -fsanitize-trap -pedantic
 	./control.bin
@@ -26,7 +26,7 @@ compile_ref:
 	./frame.bin
 
 debug:
-	clang++ c_r.cpp math_stuff.cpp -o c_r.bin -std=c++20 -g3 \
+	clang++ c_r.cpp math_stuff.cpp loop.cpp -o c_r.bin -std=c++20 -g3 \
 	-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-unused-parameter \
 	-Wno-unused-function -Wno-sign-conversion -fsanitize=undefined -fsanitize-trap \
 	-pedantic -DDEBUG
@@ -34,7 +34,7 @@ debug:
 
 
 test:
-	clang++ c_r.cpp math_stuff.cpp -o c_r.bin -std=c++20 -g3 \
+	clang++ c_r.cpp math_stuff.cpp loop.cpp -o c_r.bin -std=c++20 -g3 \
 	-Wall -Wextra -Wconversion -Wdouble-promotion -Wno-unused-parameter \
 	-Wno-unused-function -Wno-sign-conversion -fsanitize=undefined -fsanitize-trap -pedantic \
 	-DDEBUG -DTEST

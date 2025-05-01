@@ -630,3 +630,9 @@ Bivector rotate_bivector(Bivector bivector, Rotor rotor) {
   };
   return res;
 }
+
+int compare_float(const void *a, const void *b) {
+  float fa = *(const float *)a;
+  float fb = *(const float *)b;
+  return (fa > fb) - (fa < fb);
+}
