@@ -9,3 +9,4 @@ There is a **Actuator Controller** to controlle the magnetorquer with an h-bridg
 
 # Block diagram
 
+![Block diagram of the code in this repo.](./code_block_diagram.svg)
