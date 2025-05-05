@@ -145,9 +145,9 @@ void read_accelerometer(Vector *acc_data)
 {
   uint8_t data[6];
   read(MPU9255_ADDRESS, ACCEL_XOUT_H, data, 6);
-  acc_data -> x = (int16_t)(data[0] << 8 | data[1]);
-  acc_data -> y = (int16_t)(data[2] << 8 | data[3]);
-  acc_data -> z = (int16_t)(data[4] << 8 | data[5]);
+  acc_data -> e1 = (int16_t)(data[0] << 8 | data[1]);
+  acc_data -> e2 = (int16_t)(data[2] << 8 | data[3]);
+  acc_data -> e3 = (int16_t)(data[4] << 8 | data[5]);
 }
 
 /* @brief This function is used to read the accelerometer data
@@ -157,9 +157,9 @@ void read_gryroscope(Vector *gyro_data)
 {
   uint8_t data[6];
   read(MPU9255_ADDRESS, GYRO_XOUT_H, data, 6);
-  gyro_data -> x = (int16_t)(data[0] << 8 | data[1]);
-  gyro_data -> y = (int16_t)(data[2] << 8 | data[3]);
-  gyro_data -> z = (int16_t)(data[4] << 8 | data[5]);
+  gyro_data -> e1 = (int16_t)(data[0] << 8 | data[1]);
+  gyro_data -> e2 = (int16_t)(data[2] << 8 | data[3]);
+  gyro_data -> e3 = (int16_t)(data[4] << 8 | data[5]);
 }
 
 /* @brief This function is used to read the magnetometer data
@@ -177,9 +177,9 @@ void read_magnetometer(Vector *mag_data)
     DEBUG("Magnetic sensor overflow", " ");  
     return; // If invalid we keep the last data
   }
-  mag_data -> x = (int16_t)(data[1] << 8 | data[0]);
-  mag_data -> y = (int16_t)(data[3] << 8 | data[2]);
-  mag_data -> z = (int16_t)(data[5] << 8 | data[4]);
+  mag_data -> e1 = (int16_t)(data[1] << 8 | data[0]);
+  mag_data -> e2 = (int16_t)(data[3] << 8 | data[2]);
+  mag_data -> e3 = (int16_t)(data[5] << 8 | data[4]);
 }
 
 /* @brief This function is used to read the data from the sensor and scale it
@@ -269,9 +269,9 @@ void magnotometer_softreset(void){
 * @param scale_factor: the factor to scale the vector by
 */
 void scale(Vector *Vec, double scale_factor){
-  Vec -> x = ((Vec -> x) * scale_factor);
-  Vec -> y = ((Vec -> y) * scale_factor);
-  Vec -> z = ((Vec -> z) * scale_factor);
+  Vec -> e1 = ((Vec -> e1) * scale_factor);
+  Vec -> e2 = ((Vec -> e2) * scale_factor);
+  Vec -> e3 = ((Vec -> e3) * scale_factor);
 }
 
 /*
@@ -344,9 +344,9 @@ int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor)
     return 2;
   }
 
-  Vec -> vector.x = 0;
-  Vec -> vector.y = 0;
-  Vec -> vector.z = 0;
+  Vec -> vector.e1 = 0;
+  Vec -> vector.e2 = 0;
+  Vec -> vector.e3 = 0;
   Vec -> scale_factor = scale_factor;
   Vec -> sensor = sensor_t;
   return 0;
@@ -429,12 +429,12 @@ void accel_fs_sel(acc_full_scale_range range){
 ** @param Vec: the vector to print
 */
 void dataPrint(Vector *Vec){
-  Serial.println("x, y, z,");
-  Serial.print((Vec -> x));
+  Serial.println("e1, e2, e3,");
+  Serial.print((Vec -> e1));
   Serial.print(", ");
-  Serial.print((Vec -> y));
+  Serial.print((Vec -> e2));
   Serial.print(", ");
-  Serial.println((Vec -> z));
+  Serial.println((Vec -> e3));
 }
 
 /* @brief This function is used to print the data of important config registers of the AK8963

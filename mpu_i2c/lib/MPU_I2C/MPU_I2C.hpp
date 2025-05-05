@@ -20,21 +20,13 @@
 
 extern MasterI2C MPU_I2C; // I2C object
 
-/* @brief This struct is a 3D bivector
-** @note contains the xy, zx and yz components of the bivector 
-*/
-typedef struct {
-    double xy;
-    double zx;
-    double yz;
-} BiVector;
 /* @brief This struct is a 3D vector
 ** @note contains the x, y and z components of the vector 
 */
 typedef struct {
-    double x;
-    double y;
-    double z;
+    double e1;
+    double e2;
+    double e3;
 } Vector;
 
 /* @brief This is a enum fir the sensor types
