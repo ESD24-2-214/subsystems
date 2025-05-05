@@ -14,4 +14,10 @@
 #define mag_scale_factor1 0.6 // 0.6uT/LSB
 #define mag_scale_factor2 0.15 // 0.15uT/LSB
 
+#define LDR_MAX 1023 // LDR max value
+#define LDR_MIN 0 // LDR min value
+#define LDR_PIN 0 // LDR GPIO pin number
+#define LDR_PIN
+#define LDR_SAMPLES 10 // Number of samples to average for LDR reading
+
 #endif
