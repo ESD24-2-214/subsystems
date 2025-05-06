@@ -11,4 +11,6 @@ typedef struct {
     float B;
 } LDRData_t;
 
+
+
 #endif //LDR_HPP
