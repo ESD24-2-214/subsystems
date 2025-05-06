@@ -22,4 +22,11 @@
 #define LDR_PIN_B 0 // LDR GPIO pin number
 #define LDR_SAMPLES 10 // Number of samples to average for LDR reading
 
+#define ClockSpeed 400000 // I2C clockspeed: 400kHz
+
+// #define SDA 18 // Signal Data Line pin
+// #define SCL 17 // Signal Clock Line pin
+#define SDA 8 // Signal Data Line pin
+#define SCL 9 // Signal Clock Line pin
+
 #endif

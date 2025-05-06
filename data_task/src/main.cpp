@@ -3,25 +3,21 @@
 #include <Config.hpp>
 #include <AK8963_ADDRESS.hpp>
 #include <MPU_ADDRESS.hpp>
-#define ClockSpeed 400000 // 400kHz
+#include <LDR.hpp>
 
-// #define SDA 18 // Signal Data Line pin
-// #define SCL 17 // Signal Clock Line pin
 
-#define SDA 8 // Signal Data Line pin
-#define SCL 9 // Signal Clock Line pin
 
 const mag_resolution mag_res = BIT_16; // mag resolution
 const mag_meas_mode mag_mode = MEAS_MODE1; // mag mode
 const gyro_full_scale_range gyro_fs = GFS_500; // gyro full scale range
 const acc_full_scale_range accel_fs = AFS_2G; // accel full scale range
 const double gyro_scale = gyro_scale_factor500; // gyro scale factor
-
 const double accel_scale = acc_scale_factor2g; // accel scale factor
 const double mag_scale = mag_scale_factor2; // mag scale factor
-SensorVector gyro_data;
+SensorVector gyro_data = {unknown, 0, 0, 0, 0}; // gyro data structure
 SensorVector acc_data;
 SensorVector mag_data;
+LDRData_t ldr_data = {0}; // LDR data structure
 
 void read_sens_vector(SensorVector *Vec);
 
@@ -57,6 +53,7 @@ void loop() {
   read_data(&gyro_data);
   read_data(&acc_data);
   read_data(&mag_data);
+  ldr_read_data(&ldr_data, 100, 10);
   
   Serial.println("mag: ");
   dataPrint(&mag_data.vector);
@@ -78,11 +75,11 @@ void read_sens_vector(SensorVector *Vec){
   Serial.print(", ");
   Serial.print(Vec->local_addr, HEX);
   Serial.print(", ");
-  Serial.print(Vec->vector.x);
+  Serial.print(Vec->vector.e1);
   Serial.print(", ");
-  Serial.print(Vec->vector.y);
+  Serial.print(Vec->vector.e2);
   Serial.print(", ");
-  Serial.print(Vec->vector.z);
+  Serial.print(Vec->vector.e3);
   Serial.print(", ");
   Serial.println(Vec->scale_factor, 6);
 }
