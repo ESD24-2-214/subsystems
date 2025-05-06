@@ -14,17 +14,17 @@ const acc_full_scale_range accel_fs = AFS_2G; // accel full scale range
 const double gyro_scale = gyro_scale_factor500; // gyro scale factor
 const double accel_scale = acc_scale_factor2g; // accel scale factor
 const double mag_scale = mag_scale_factor2; // mag scale factor
-SensorVector gyro_data = {unknown, 0, 0, 0, 0}; // gyro data structure
-SensorVector acc_data;
-SensorVector mag_data;
-LDRData_t ldr_data = {0}; // LDR data structure
+SensorVector gyro_data = {unknown, 0, 0, 0, 0};
+SensorVector acc_data = {unknown, 0, 0, 0, 0}; 
+SensorVector mag_data = {unknown, 0, 0, 0, 0};
+LDRData_t ldr_data = {0,0,0,0}; // LDR data structure
 
 void read_sens_vector(SensorVector *Vec);
 
 void setup() {
 Serial.begin(115200);
 while (!Serial){};
-delay(5000); Serial.println("YO!!");
+delay(5000);
 if(MPU_I2C.begin(SDA, SCL, ClockSpeed) == false){
   Serial.println("I2C begin Failed!");
 }
@@ -46,22 +46,23 @@ read_sens_vector(&gyro_data);
 read_sens_vector(&acc_data);
 read_sens_vector(&mag_data);
 delay(5000);
-
-
 }
+
+
 void loop() {
   read_data(&gyro_data);
   read_data(&acc_data);
   read_data(&mag_data);
   ldr_read_data(&ldr_data, 100, 10);
-  
+
   Serial.println("mag: ");
   dataPrint(&mag_data.vector);
   Serial.println("acc: ");
   dataPrint(&acc_data.vector);
   Serial.println("gyro: ");
   dataPrint(&gyro_data.vector);
-  
+  Serial.println("LDR: ");
+  ldr_data_print(&ldr_data);
   //mpu_debug_print();
   //mag_debug_print();
 

@@ -13,5 +13,6 @@ typedef struct {
 
 void ldr_read(LDRData_t *ldr_data);
 void ldr_read_data(LDRData_t *ldr_data, uint16_t t_ms, uint16_t samples);
+void ldr_data_print(LDRData_t *ldr_data);
 
 #endif //LDR_HPP
