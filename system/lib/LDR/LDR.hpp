@@ -3,12 +3,13 @@
 
 #include <Arduino.h>
 #include <Config.hpp>
+#include <math_stuff.hpp>
 
 typedef struct {
-    double F;
-    double L;
-    double R;
-    double B;
+    float F;
+    float L;
+    float R;
+    float B;
 } LDRData_t;
 
 void ldr_read(LDRData_t *ldr_data);
