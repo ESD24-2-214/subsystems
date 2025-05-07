@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -e
+if [[ ! -d "/home/rasmus/Documents/Uni/aau-projects/2nd-semester/subsystems/FreeRTOS_Test" ]]; then
+  echo "Cannot find source directory; Did you move it?"
+  echo "(Looking for "/home/rasmus/Documents/Uni/aau-projects/2nd-semester/subsystems/FreeRTOS_Test")"
+  echo 'Cannot force reload with this script - use "direnv reload" manually and then try again'
+  exit 1
+fi
+
+# rebuild the cache forcefully
+_nix_direnv_force_reload=1 direnv exec "/home/rasmus/Documents/Uni/aau-projects/2nd-semester/subsystems/FreeRTOS_Test" true
+
+# Update the mtime for .envrc.
+# This will cause direnv to reload again - but without re-building.
+touch "/home/rasmus/Documents/Uni/aau-projects/2nd-semester/subsystems/FreeRTOS_Test/.envrc"
+
+# Also update the timestamp of whatever profile_rc we have.
+# This makes sure that we know we are up to date.
+touch -r "/home/rasmus/Documents/Uni/aau-projects/2nd-semester/subsystems/FreeRTOS_Test/.envrc" "/home/rasmus/Documents/Uni/aau-projects/2nd-semester/subsystems/FreeRTOS_Test/.direnv"/*.rc
