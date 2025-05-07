@@ -275,8 +275,8 @@ void SensorRead(void *par) {
   SensorVector acc_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
   Vector sun_data = {0, 0, 0}; // LDR data structure
-  const uint8_t period = 10;
-  const uint8_t samples = 100;
+  uint16_t period = 10;
+  uint16_t samples = 100;
   // Config thing
   bypass_to_magnometer(true);
   I2Cbus_SCCAN();
@@ -313,4 +313,4 @@ void SensorRead(void *par) {
     xQueueOverwrite(xQueueSensorData, &data);
 
   } 
-}
+} 

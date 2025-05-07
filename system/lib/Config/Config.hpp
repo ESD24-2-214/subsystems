@@ -32,10 +32,10 @@ static const BaseType_t app_cpu = 1;
 #define LDR_PIN_B 0 // LDR GPIO pin number
 #define MAG1 21  //
 #define MAG2 10  //
-#define MAG1.CW  19  //
-#define MAG1.CCW 18  //
-#define MAG2.CW  20  //
-#define MAG2.CCW 3   //
+#define MAG1_CW  19  //
+#define MAG1_CCW 18  //
+#define MAG2_CW  20  //
+#define MAG2_CCW 3   //
 #define LED1 5   //
 #define LED2 6   //
 #define LED3 7   //
