@@ -10,15 +10,15 @@
 
 // Queue declaration:
 struct SensorData {
-  uint32_t time_stamp;
+  uint32_t time_stamp_msec;
   Vector magno_sat;
   Vector sun_sat;
 };
 struct MagnetorquerScalarData {
-  uint32_t time_stamp;
-  float scalar_1;
-  float scalar_2;
-  float scalar_3;
+  uint32_t time_stamp_msec;
+  float scalar_for_e12;
+  float scalar_for_e31;
+  float scalar_for_e23;
 };
 QueueHandle_t xQueueSensorData = NULL;
 QueueHandle_t xQueueMagnetorquerScalarData = NULL;
@@ -60,15 +60,7 @@ void setup() {
                           pro_cpu); // Create SendToQueue
 }
 
-void communication() {
-  Serial.write(0x1B);
-  Serial.print("[2J"); // clear screen
-  Serial.write(0x1B);
-  Serial.print("[1;1H"); // place cursor in 1 1
-  Serial.println("Hello, World!");
-}
-
-void loop() { communication(); }
+void loop() {}
 
 void control_loop(void *pvParameters) {
 
@@ -112,9 +104,7 @@ void control_loop(void *pvParameters) {
 
   // Magnetorquers
   float magnetorquer_dipole = 0.1458f; // ampere meter^2
-  float mag_s1 = 0.0f;
-  float mag_s2 = 0.0f;
-  float mag_s3 = 0.0f;
+  MagnetorquerScalarData magnetorquer_scalars;
   Bivector mag1_sat = Bivector{
       // This does not exist
       .e12 = 1.0f,
@@ -180,12 +170,14 @@ void control_loop(void *pvParameters) {
   const TickType_t xFrequency = pdMS_TO_TICKS(int(control_loop_periode * 1000));
   xLastWakeTime = xTaskGetTickCount();
 
+  // loop
   for (;;) {
     // Receive Data from Queue
     if (xQueueReceive(xQueueSensorData, &(sensor_data), (TickType_t)10) ==
         pdPASS) {
-
-      /* xRxedStructure now contains a copy of xMessage. */
+      // Write got data to serial
+    } else {
+      // Write running with old data
     }
 
     // "messure the sensors"
@@ -226,7 +218,25 @@ void control_loop(void *pvParameters) {
 
     Bivector torque_2_world = actuator_test(
         torque_1_world, cob_bivec_from_sat_to_world, magnetric_flux_density_sat,
-        mag1_sat, mag2_sat, mag3_sat, mag_s1, mag_s2, mag_s3);
+        mag1_sat, mag2_sat, mag3_sat, magnetorquer_scalars.scalar_for_e12,
+        magnetorquer_scalars.scalar_for_e31,
+        magnetorquer_scalars.scalar_for_e23);
+
+    // send scalars to queue
+    magnetorquer_scalars.time_stamp_msec =
+        pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
+    if (xQueueOverwrite(xQueueMagnetorquerScalarData, &magnetorquer_scalars) ==
+        pdPASS) {
+      Serial.println("Send Scalar to Actuator Controller");
+      Serial.print("\tTime Stamp: ");
+      Serial.println(magnetorquer_scalars.time_stamp_msec);
+      Serial.print("\tScalar for e12: ");
+      Serial.println(magnetorquer_scalars.scalar_for_e12);
+      Serial.print("\tScalar for e31: ");
+      Serial.println(magnetorquer_scalars.scalar_for_e31);
+      Serial.print("\tScalar for e23: ");
+      Serial.println(magnetorquer_scalars.scalar_for_e23);
+    }
 
     Bivector rotation_angle_world =
         angle_from_torque(torque_2_world, inertia_world, angular_velocity_world,

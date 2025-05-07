@@ -191,8 +191,9 @@ Bivector pid(float K_p, float K_i, float K_d, Bivector error,
 
 Bivector actuator_test(Bivector torque, Matrix3x3 cob_bivec_from_sat_to_world,
                        Bivector magnetric_flux_density_sat, Bivector mag1_sat,
-                       Bivector mag2_sat, Bivector mag3_sat, float &mag_s1,
-                       float &mag_s2, float &mag_s3) {
+                       Bivector mag2_sat, Bivector mag3_sat,
+                       float &mag_s_for_e12, float &mag_s_for_e31,
+                       float &mag_s_for_e23) {
 
 #ifdef DEBUG
   FNPRINT("\nActuator Model:\n");
@@ -268,17 +269,20 @@ Bivector actuator_test(Bivector torque, Matrix3x3 cob_bivec_from_sat_to_world,
     FNPRINT("scalars are too big\n");
 #endif
     float max_scaler_sqrt = sqrtf(scalar_list[2]);
-    mag_s1 = scalers.e12 / max_scaler_sqrt;
-    mag_s2 = scalers.e31 / max_scaler_sqrt;
-    mag_s3 = scalers.e23 / max_scaler_sqrt;
+    mag_s_for_e12 = scalers.e12 / max_scaler_sqrt;
+    mag_s_for_e31 = scalers.e31 / max_scaler_sqrt;
+    mag_s_for_e23 = scalers.e23 / max_scaler_sqrt;
 
     Bivector new_mag_world = Bivector{
-        .e12 = (mag_s1 * mag1_world.e12) + (mag_s2 * mag2_world.e12) +
-               (mag_s3 * mag3_world.e12),
-        .e31 = (mag_s1 * mag1_world.e31) + (mag_s2 * mag2_world.e31) +
-               (mag_s3 * mag3_world.e31),
-        .e23 = (mag_s1 * mag1_world.e23) + (mag_s2 * mag2_world.e23) +
-               (mag_s3 * mag3_world.e23),
+        .e12 = (mag_s_for_e12 * mag1_world.e12) +
+               (mag_s_for_e31 * mag2_world.e12) +
+               (mag_s_for_e23 * mag3_world.e12),
+        .e31 = (mag_s_for_e12 * mag1_world.e31) +
+               (mag_s_for_e31 * mag2_world.e31) +
+               (mag_s_for_e23 * mag3_world.e31),
+        .e23 = (mag_s_for_e12 * mag1_world.e23) +
+               (mag_s_for_e31 * mag2_world.e23) +
+               (mag_s_for_e23 * mag3_world.e23),
     };
 
     // torque = - mag_dipole cross mag_flux
@@ -289,9 +293,9 @@ Bivector actuator_test(Bivector torque, Matrix3x3 cob_bivec_from_sat_to_world,
 #ifdef DEBUG
     FNPRINT("scalars are just fine\n");
 #endif
-    mag_s1 = scalers.e12;
-    mag_s2 = scalers.e31;
-    mag_s3 = scalers.e23;
+    mag_s_for_e12 = scalers.e12;
+    mag_s_for_e31 = scalers.e31;
+    mag_s_for_e23 = scalers.e23;
     return torque;
   }
 }
