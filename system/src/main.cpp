@@ -23,6 +23,18 @@ struct MagnetorquerScalarData {
 QueueHandle_t xQueueSensorData = NULL;
 QueueHandle_t xQueueMagnetorquerScalarData = NULL;
 
+// Mutex
+Vector refence_world = Vector{.e1 = 0, .e2 = 1, .e3 = 0};
+Vector current_world;
+
+SemaphoreHandle_t mutexRefernceVector = NULL;
+SemaphoreHandle_t mutexCurrentVector = NULL;
+
+void overide_refernce_vector(Vector new_refernce_world);
+void read_refernce_vector(Vector &local_refernce_world);
+void overide_current_vector(Vector new_current_world);
+void read_current_vector(Vector &local_current_world);
+
 // Task declaration:
 void control_loop(void *pvParameters);
 void SensorRead(void *par);
@@ -41,6 +53,10 @@ void setup() {
 
     /* Queue was not created and must not be used. */
   }
+
+  // Mutex
+  mutexRefernceVector = xSemaphoreCreateMutex();
+  mutexCurrentVector = xSemaphoreCreateMutex();
 
   // Tasks
   xTaskCreatePinnedToCore(control_loop,   // Function to call
@@ -173,11 +189,47 @@ void control_loop(void *pvParameters) {
   // loop
   for (;;) {
     // Receive Data from Queue
+    sensor_data.time_stamp_msec =
+        pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     if (xQueueReceive(xQueueSensorData, &(sensor_data), (TickType_t)10) ==
         pdPASS) {
       // Write got data to serial
+      Serial.println("Resived Sensor Vector");
+      Serial.print("\tTime Stamp: ");
+      Serial.println(sensor_data.time_stamp_msec);
+      Serial.print("\tMagno Vector { ");
+      Serial.print(sensor_data.magno_sat.e1);
+      Serial.print("e1, ");
+      Serial.print(sensor_data.magno_sat.e2);
+      Serial.print("e2 ");
+      Serial.print(sensor_data.magno_sat.e3);
+      Serial.println("e3 }");
+      Serial.print("\tSun Vector { ");
+      Serial.print(sensor_data.sun_sat.e1);
+      Serial.print("e1, ");
+      Serial.print(sensor_data.sun_sat.e2);
+      Serial.print("e2 ");
+      Serial.print(sensor_data.sun_sat.e3);
+      Serial.println("e3 }");
     } else {
       // Write running with old data
+      Serial.println("Using Old Sensor Vector");
+      Serial.print("\tOld Time Stamp: ");
+      Serial.println(sensor_data.time_stamp_msec);
+      Serial.print("\tMagno Vector { ");
+      Serial.print(sensor_data.magno_sat.e1);
+      Serial.print("e1, ");
+      Serial.print(sensor_data.magno_sat.e2);
+      Serial.print("e2 ");
+      Serial.print(sensor_data.magno_sat.e3);
+      Serial.println("e3 }");
+      Serial.print("\tSun Vector { ");
+      Serial.print(sensor_data.sun_sat.e1);
+      Serial.print("e1, ");
+      Serial.print(sensor_data.sun_sat.e2);
+      Serial.print("e2 ");
+      Serial.print(sensor_data.sun_sat.e3);
+      Serial.println("e3 }");
     }
 
     // "messure the sensors"
@@ -275,8 +327,8 @@ void SensorRead(void *par) {
   SensorVector acc_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
   Vector sun_data = {0, 0, 0}; // LDR data structure
-  const uint8_t period = 10;
-  const uint8_t samples = 100;
+  uint16_t period = 10;
+  uint16_t samples = 100;
   // Config thing
   bypass_to_magnometer(true);
   I2Cbus_SCCAN();
@@ -293,13 +345,11 @@ void SensorRead(void *par) {
   initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
   initSensorVector(&acc_data, ACCELEROMETER, accel_scale);
   initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
-  SensorData data = {
-    .time_stamp_msec = (xTaskGetTickCount()), 
-    .magno_sat = mag_data.vector, 
-    .sun_sat = sun_data};
-  
-  
-    // Task loop
+  SensorData data = {.time_stamp_msec = (xTaskGetTickCount()),
+                     .magno_sat = mag_data.vector,
+                     .sun_sat = sun_data};
+
+  // Task loop
   while (1) {
 
     read_data(&gyro_data);
@@ -311,6 +361,52 @@ void SensorRead(void *par) {
     data.sun_sat = sun_data;
     data.magno_sat = mag_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
+  }
+}
 
-  } 
+// Mutex functions
+void overide_refernce_vector(Vector new_refernce_world) {
+  if (xSemaphoreTake(mutexRefernceVector, (TickType_t)10) == pdTRUE) {
+    refence_world = new_refernce_world;
+    xSemaphoreGive(mutexRefernceVector);
+  } else {
+    Serial.println("Could not take mutexReferenceVector");
+    Serial.println("No change happend");
+    Serial.print("\tTime Stamp: ");
+    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+  }
+}
+void read_refernce_vector(Vector *local_refernce_world) {
+  if (xSemaphoreTake(mutexRefernceVector, (TickType_t)10) == pdTRUE) {
+    *local_refernce_world = refence_world;
+    xSemaphoreGive(mutexRefernceVector);
+  } else {
+    Serial.println("Could not take mutexReferenceVector");
+    Serial.println("No vector was copied");
+    Serial.print("\tTime Stamp: ");
+    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+  }
+}
+
+void overide_current_vector(Vector new_current_world) {
+  if (xSemaphoreTake(mutexCurrentVector, (TickType_t)10) == pdTRUE) {
+    current_world = new_current_world;
+    xSemaphoreGive(mutexCurrentVector);
+  } else {
+    Serial.println("Could not take mutexCurrentVector");
+    Serial.println("No change happend");
+    Serial.print("\tTime Stamp: ");
+    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+  }
+}
+void read_current_vector(Vector *local_current_world) {
+  if (xSemaphoreTake(mutexCurrentVector, (TickType_t)10) == pdTRUE) {
+    *local_current_world = current_world;
+    xSemaphoreGive(mutexCurrentVector);
+  } else {
+    Serial.println("Could not take mutexCurrentVector");
+    Serial.println("No vector was copied");
+    Serial.print("\tTime Stamp: ");
+    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+  }
 }
