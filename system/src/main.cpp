@@ -261,10 +261,12 @@ void SensorRead(void *par) {
   const double gyro_scale = gyro_scale_factor500; // gyro scale factor
   const double accel_scale = acc_scale_factor2g;  // accel scale factor
   const double mag_scale = mag_scale_factor2;     // mag scale factor
+  const uint8_t samples = 100;
+  const uint8_t period = 10;
   SensorVector gyro_data = {unknown, 0, 0, 0, 0};
   SensorVector acc_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
-  LDRData_t ldr_data = {0, 0, 0, 0}; // LDR data structure
+  Vector sun_data = {0, 0, 0}; // LDR data structure
 
   // Config thing
   bypass_to_magnometer(true);
@@ -281,12 +283,24 @@ void SensorRead(void *par) {
   initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
   initSensorVector(&acc_data, ACCELEROMETER, accel_scale);
   initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
-
-  // Task loop
+  SensorData data = {
+    .time_stamp = (xTaskGetTickCount()), 
+    .magno_sat = mag_data.vector, 
+    .sun_sat = sun_data};
+  
+  
+    // Task loop
   while (1) {
+    
     read_data(&gyro_data);
     read_data(&acc_data);
     read_data(&mag_data);
-    ldr_read_data(&ldr_data, 100, 10);
+    sun_read_data(&sun_data, period, samples);
+
+    data.time_stamp = xTaskGetTickCount();
+    data.sun_sat = sun_data;
+    data.magno_sat = mag_data.vector;
+    xQueueOverwrite(xQueueSensorData, &data);
+
   }
 }
