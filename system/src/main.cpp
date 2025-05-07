@@ -274,8 +274,9 @@ void SensorRead(void *par) {
   SensorVector gyro_data = {unknown, 0, 0, 0, 0};
   SensorVector acc_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
-  LDRData_t ldr_data = {0, 0, 0, 0}; // LDR data structure
-
+  Vector sun_data = {0, 0, 0}; // LDR data structure
+  const uint8_t period = 10;
+  const uint8_t samples = 100;
   // Config thing
   bypass_to_magnometer(true);
   I2Cbus_SCCAN();
