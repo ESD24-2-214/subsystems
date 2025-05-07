@@ -271,12 +271,10 @@ void SensorRead(void *par) {
   const double gyro_scale = gyro_scale_factor500; // gyro scale factor
   const double accel_scale = acc_scale_factor2g;  // accel scale factor
   const double mag_scale = mag_scale_factor2;     // mag scale factor
-  const uint8_t samples = 100;
-  const uint8_t period = 10;
   SensorVector gyro_data = {unknown, 0, 0, 0, 0};
   SensorVector acc_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
-  Vector sun_data = {0, 0, 0}; // LDR data structure
+  LDRData_t ldr_data = {0, 0, 0, 0}; // LDR data structure
 
   // Config thing
   bypass_to_magnometer(true);
@@ -287,7 +285,8 @@ void SensorRead(void *par) {
   mag_meas_config(mag_mode);
   gyro_fs_sel(gyro_fs);
   accel_fs_sel(accel_fs);
-  write(AK8963_ADDRESS, ASTC, 0x00); // Set clock source to PLL with X axis gyroscope reference
+  write(AK8963_ADDRESS, ASTC,
+        0x00); // Set clock source to PLL with X axis gyroscope reference
 
   // Init of sensorvectors
   initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
