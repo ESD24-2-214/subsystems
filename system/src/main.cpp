@@ -16,6 +16,7 @@ void SensorRead(void *par);
 
 void setup() {
   Serial.begin(115200); // Initialize serial monitor
+  while(!Serial){}
 
   // Tasks
   xTaskCreatePinnedToCore(control_loop,            // Function to call
@@ -32,7 +33,7 @@ void setup() {
                           NULL,          // Task input parameter
                           1,    // Task priority (0 to configMAX_PRIORITIES - 1)
                           NULL, // Task handle
-                          app_cpu); // Create SendToQueue
+                          pro_cpu); // Create SendToQueue
 
 }
 
@@ -216,6 +217,11 @@ void control_loop(void *pvParameters) {
   }
 
 void SensorRead(void *par){
+    if(MPU_I2C.begin(SDA, SCL, ClockSpeed) == false){
+        Serial.println("I2C begin Failed!");
+      }
+
+    //Define param of task
     const mag_resolution mag_res = BIT_16; // mag resolution
     const mag_meas_mode mag_mode = MEAS_MODE1; // mag mode
     const gyro_full_scale_range gyro_fs = GFS_500; // gyro full scale range
@@ -228,22 +234,30 @@ void SensorRead(void *par){
     SensorVector mag_data = {unknown, 0, 0, 0, 0};
     LDRData_t ldr_data = {0,0,0,0}; // LDR data structure
 
+   //Config thing
+    bypass_to_magnometer(true);
+    I2Cbus_SCCAN();
+    delay(2000);
+    
+    mag_resolution_config(mag_res);
+    mag_meas_config(mag_mode);
+    gyro_fs_sel(gyro_fs);
+    accel_fs_sel(accel_fs);
+    write(AK8963_ADDRESS, ASTC , 0x00); // Set clock source to PLL with X axis gyroscope reference
+    
+     //Init of sensorvectors
+    initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
+    initSensorVector(&acc_data, ACCELEROMETER, accel_scale);
+    initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
+    read_sens_vector(&gyro_data);
+    read_sens_vector(&acc_data);
+    read_sens_vector(&mag_data);
+
+    //Task loop
     while(1){
         read_data(&gyro_data);
         read_data(&acc_data);
         read_data(&mag_data);
         ldr_read_data(&ldr_data, 100, 10);
-
-        Serial.println("mag: ");
-        dataPrint(&mag_data.vector);
-        Serial.println("acc: ");
-        dataPrint(&acc_data.vector);
-        Serial.println("gyro: ");
-        dataPrint(&gyro_data.vector);
-        Serial.println("LDR: ");
-        ldr_data_print(&ldr_data);
-
-        
     }
-
  }
