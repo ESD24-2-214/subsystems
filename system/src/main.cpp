@@ -24,14 +24,14 @@ QueueHandle_t xQueueSensorData = NULL;
 QueueHandle_t xQueueMagnetorquerScalarData = NULL;
 
 // Mutex
-Vector refence_world = Vector{.e1 = 0, .e2 = 1, .e3 = 0};
+Vector reference_world = Vector{.e1 = 0, .e2 = 1, .e3 = 0};
 Vector current_world;
 
 SemaphoreHandle_t mutexRefernceVector = NULL;
 SemaphoreHandle_t mutexCurrentVector = NULL;
 
-void overide_refernce_vector(Vector new_refernce_world);
-void read_refernce_vector(Vector &local_refernce_world);
+void overide_reference_vector(Vector new_reference_world);
+void read_reference_vector(Vector &local_reference_world);
 void overide_current_vector(Vector new_current_world);
 void read_current_vector(Vector &local_current_world);
 
@@ -95,10 +95,6 @@ void control_loop(void *pvParameters) {
       .e23 = 0.0f,
   };
 
-  // The calculated next pointing direction
-  // n+1
-  Vector current_calc_world;
-
   // inertia matrix in SAT
   // This is modelled as a plate
   // 1/12 * m * (a^2 + b^2)
@@ -141,27 +137,7 @@ void control_loop(void *pvParameters) {
   /// Sensors
   SensorData sensor_data;
 
-  // sun sensor
-  // This is messured
-  // Used to create WORLD
-  Vector sun_sensor_sat{
-      .e1 = 0.7071f,
-      .e2 = -0.7071f,
-      .e3 = 0.0f,
-  };
-
-  // Magnetic Flux Density
-  // Messured in MAG frame
-  // Translated to SAT frame
-  // Used to create WORLD
-  float magnetric_flux_density_norm = 0.00002f; // 20 * 10^(-6) tesla
-  Vector mag_sensor_sat{
-      .e1 = 0.7071f * magnetric_flux_density_norm,
-      .e2 = 0.7071f * magnetric_flux_density_norm,
-      .e3 = 0.0f,
-  };
-
-  Bivector magnetric_flux_density_sat = dual_vector_to_bivector(mag_sensor_sat);
+  Bivector magnetric_flux_density_sat;
 
   // The change of basis matrices
   Matrix3x3 cob_vec_from_world_to_sat;
@@ -232,30 +208,39 @@ void control_loop(void *pvParameters) {
       Serial.println("e3 }");
     }
 
-    // "messure the sensors"
-    measure(sensor_rotation_angle_sat, sun_sensor_sat, mag_sensor_sat);
+    // Get magnotometer output as bivector
+    magnetric_flux_density_sat = dual_vector_to_bivector(sensor_data.magno_sat);
+
     // make change of basis matrix from messurements
     cob_from_measure(cob_vec_from_world_to_sat, cob_vec_from_sat_to_world,
                      cob_bivec_from_world_to_sat, cob_bivec_from_sat_to_world,
-                     sun_sensor_sat, mag_sensor_sat);
+                     sensor_data.sun_sat, sensor_data.magno_sat);
 
     // The inerita is defined in SAT
     // It is for bivectors
     inertia_world = matrix_mul(cob_bivec_from_sat_to_world, inertia_sat);
 
     // The reference is WORLD frame
-    Vector reference_world = Vector{0, 1, 0};
+    Vector reference_world;
+    read_reference_vector(reference_world);
+
     // the current postion is also fixed in SAT frame
     Vector current_world =
         matrix_vector_mul(cob_vec_from_sat_to_world, Vector{1, 0, 0});
 
     // mix the last calcutated point dir
-    if (first_run) {
+    if (!first_run) {
+      // The calculated pointing direction from last iteration
+      // n-1
+      Vector last_calc_world;
+      read_current_vector(last_calc_world);
+
       current_world = Vector{
-          .e1 = (current_world.e1 + current_calc_world.e1) * 0.5f,
-          .e2 = (current_world.e2 + current_calc_world.e2) * 0.5f,
-          .e3 = (current_world.e3 + current_calc_world.e3) * 0.5f,
+          .e1 = (current_world.e1 + last_calc_world.e1) * 0.5f,
+          .e2 = (current_world.e2 + last_calc_world.e2) * 0.5f,
+          .e3 = (current_world.e3 + last_calc_world.e3) * 0.5f,
       };
+    } else {
       first_run = 0;
     }
 
@@ -294,17 +279,10 @@ void control_loop(void *pvParameters) {
         angle_from_torque(torque_2_world, inertia_world, angular_velocity_world,
                           control_loop_periode);
 
-    // Set rotation angle for sensor
-    // It is in SAT
-    // the sensors must rotated the oppiste direction of the sat
-    sensor_rotation_angle_sat = scale_bivector(
-        matrix_bivector_mul(cob_bivec_from_world_to_sat, rotation_angle_world),
-        -1.0);
-
     // find the next point direction
     Rotor rotor = rotor_form_halv_angle_bivector(
         scale_bivector(rotation_angle_world, 0.5));
-    current_calc_world = rotate_vector(current_world, rotor);
+    overide_current_vector(rotate_vector(current_world, rotor));
 
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
@@ -327,7 +305,7 @@ void SensorRead(void *par) {
   SensorVector acc_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
   Vector sun_data = {0, 0, 0}; // LDR data structure
-  uint16_t period = 10;
+  uint16_t period = 10;        // millisecond
   uint16_t samples = 100;
   // Config thing
   bypass_to_magnometer(true);
@@ -365,9 +343,9 @@ void SensorRead(void *par) {
 }
 
 // Mutex functions
-void overide_refernce_vector(Vector new_refernce_world) {
+void overide_reference_vector(Vector new_reference_world) {
   if (xSemaphoreTake(mutexRefernceVector, (TickType_t)10) == pdTRUE) {
-    refence_world = new_refernce_world;
+    reference_world = new_reference_world;
     xSemaphoreGive(mutexRefernceVector);
   } else {
     Serial.println("Could not take mutexReferenceVector");
@@ -376,9 +354,9 @@ void overide_refernce_vector(Vector new_refernce_world) {
     Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
   }
 }
-void read_refernce_vector(Vector *local_refernce_world) {
+void read_reference_vector(Vector &local_reference_world) {
   if (xSemaphoreTake(mutexRefernceVector, (TickType_t)10) == pdTRUE) {
-    *local_refernce_world = refence_world;
+    local_reference_world = reference_world;
     xSemaphoreGive(mutexRefernceVector);
   } else {
     Serial.println("Could not take mutexReferenceVector");
@@ -399,9 +377,9 @@ void overide_current_vector(Vector new_current_world) {
     Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
   }
 }
-void read_current_vector(Vector *local_current_world) {
+void read_current_vector(Vector &local_current_world) {
   if (xSemaphoreTake(mutexCurrentVector, (TickType_t)10) == pdTRUE) {
-    *local_current_world = current_world;
+    local_current_world = current_world;
     xSemaphoreGive(mutexCurrentVector);
   } else {
     Serial.println("Could not take mutexCurrentVector");
