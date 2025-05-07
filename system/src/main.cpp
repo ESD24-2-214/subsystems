@@ -312,5 +312,5 @@ void SensorRead(void *par) {
     data.magno_sat = mag_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
 
-  }
+  } 
 }
