@@ -7,8 +7,7 @@
 #include <MPU_ADDRESS.hpp>
 #include <LDR.hpp>
 
-static const BaseType_t pro_cpu = 0;
-static const BaseType_t app_cpu = 1;
+
 
 //Task declaration:
 void control_loop(void *pvParameters) ;
@@ -249,9 +248,6 @@ void SensorRead(void *par){
     initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
     initSensorVector(&acc_data, ACCELEROMETER, accel_scale);
     initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
-    read_sens_vector(&gyro_data);
-    read_sens_vector(&acc_data);
-    read_sens_vector(&mag_data);
 
     //Task loop
     while(1){

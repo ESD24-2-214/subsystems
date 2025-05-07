@@ -1,6 +1,9 @@
 #ifndef CONFIG
 #define CONFIG
 
+static const BaseType_t pro_cpu = 0;
+static const BaseType_t app_cpu = 1;
+
 #define gyro_scale_factor250 (1/131.0) // 250 degrees/sec LSB/(degrees/sec)
 #define gyro_scale_factor500 (1/65.5) // 500 degrees/sec LSB/(degrees/sec)
 #define gyro_scale_factor1000 (1/32.8) // 1000 degrees/sec LSB/(degrees/sec)
