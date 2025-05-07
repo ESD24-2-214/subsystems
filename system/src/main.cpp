@@ -275,8 +275,7 @@ void SensorRead(void *par) {
   mag_meas_config(mag_mode);
   gyro_fs_sel(gyro_fs);
   accel_fs_sel(accel_fs);
-  write(AK8963_ADDRESS, ASTC,
-        0x00); // Set clock source to PLL with X axis gyroscope reference
+  write(AK8963_ADDRESS, ASTC, 0x00); // Set clock source to PLL with X axis gyroscope reference
 
   // Init of sensorvectors
   initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
