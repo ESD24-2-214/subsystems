@@ -17,19 +17,29 @@ static const BaseType_t app_cpu = 1;
 #define mag_scale_factor1 0.6 // 0.6uT/LSB
 #define mag_scale_factor2 0.15 // 0.15uT/LSB
 
-#define LDR_MAX 1023 // LDR max value
+#define LDR_MAX 4095 // LDR max value
 #define LDR_MIN 0 // LDR min value
+
+
+
+#define ClockSpeed 400000 // I2C clockspeed: 400kHz
+
+#define SDA 8 // Signal Data Line pin
+#define SCL 9 // Signal Clock Line pin
 #define LDR_PIN_F 4 // LDR GPIO pin number
 #define LDR_PIN_L 1 // LDR GPIO pin number
 #define LDR_PIN_R 2 // LDR GPIO pin number
 #define LDR_PIN_B 0 // LDR GPIO pin number
-#define LDR_SAMPLES 10 // Number of samples to average for LDR reading
+#define MAG1 21  //
+#define MAG2 10  //
+#define MAG1.CW  19  //
+#define MAG1.CCW 18  //
+#define MAG2.CW  20  //
+#define MAG2.CCW 3   //
+#define LED1 5   //
+#define LED2 6   //
+#define LED3 7   //
 
-#define ClockSpeed 400000 // I2C clockspeed: 400kHz
 
-// #define SDA 18 // Signal Data Line pin
-// #define SCL 17 // Signal Clock Line pin
-#define SDA 8 // Signal Data Line pin
-#define SCL 9 // Signal Clock Line pin
 
 #endif
