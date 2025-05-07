@@ -6,7 +6,7 @@ static const BaseType_t app_cpu = 0; // Unicore mode
 static const BaseType_t app_cpu = 1;
 #endif
 
-QueueHandle_t Queue1, SerialQueue  = NULL; // Declare a queue handle
+QueueHandle_t Queue1, SerialQueue = NULL; // Declare a queue handle
 
 struct Message {
   int messageval;
@@ -40,7 +40,7 @@ void SendToQueue(void *par) {
 void ReceiveFromQueue(void *par) {
   struct Message receivedValue;
   for (;;) {
-    if (xQueueReceive(Queue1, &receivedValue, 0) == pdPASS) {
+    if (xQueueReceive(Queue1, &receivedValue, 0) == pdTRUE) {
       String m = "Received Item";
       xQueueSend(SerialQueue, &m, 0);
 
@@ -48,8 +48,8 @@ void ReceiveFromQueue(void *par) {
       snprintf(msg2.message, sizeof(msg2.message), "%d", receivedValue.messageval);
       if(xQueueSend(SerialQueue, &msg2, 0) != pdPASS){
         Serial.println("Failed to print value");
+        }
       }
-    }
     }
     vTaskDelay(1100 / portTICK_PERIOD_MS);
   }
@@ -58,7 +58,7 @@ void SerialService(void *par){
   struct StringMessage outboundMessage;
 
   for(;;){
-    if (xQueueReceive(SerialQueue, &outboundMessage, 0) == pdPASS) {
+    if (xQueueReceive(SerialQueue, &outboundMessage, 0) == pdTRUE) {
       Serial.println(outboundMessage.message);
     }}
   }
