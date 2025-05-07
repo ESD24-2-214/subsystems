@@ -294,20 +294,20 @@ void SensorRead(void *par) {
   initSensorVector(&acc_data, ACCELEROMETER, accel_scale);
   initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
   SensorData data = {
-    .time_stamp = (xTaskGetTickCount()), 
+    .time_stamp_msec = (xTaskGetTickCount()), 
     .magno_sat = mag_data.vector, 
     .sun_sat = sun_data};
   
   
     // Task loop
   while (1) {
-    
+
     read_data(&gyro_data);
     read_data(&acc_data);
     read_data(&mag_data);
     sun_read_data(&sun_data, period, samples);
 
-    data.time_stamp = xTaskGetTickCount();
+    data.time_stamp_msec = xTaskGetTickCount();
     data.sun_sat = sun_data;
     data.magno_sat = mag_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
