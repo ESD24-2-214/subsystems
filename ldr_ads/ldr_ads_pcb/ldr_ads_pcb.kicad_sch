@@ -907,6 +907,16 @@
 	)
 	(wire
 		(pts
+			(xy 62.23 52.07) (xy 64.77 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a815f255-d470-4ac6-a4bd-6b8600a5027d")
+	)
+	(wire
+		(pts
 			(xy 50.8 52.07) (xy 50.8 50.8)
 		)
 		(stroke
@@ -927,7 +937,7 @@
 	)
 	(wire
 		(pts
-			(xy 57.15 52.07) (xy 50.8 52.07)
+			(xy 54.61 52.07) (xy 50.8 52.07)
 		)
 		(stroke
 			(width 0)
@@ -1262,8 +1272,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "659d7fa0-22e0-4041-890d-94b600c5190b")
-		(property "Reference" "C1"
+		(uuid "6f2a1b40-3b65-4c15-be2a-eb20d092734e")
+		(property "Reference" "C2"
 			(at 68.58 55.8799 0)
 			(effects
 				(font
@@ -1281,7 +1291,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_THT:C_Rect_L4.6mm_W2.0mm_P2.50mm_MKS02_FKP02"
+		(property "Footprint" "Capacitor_THT:C_Rect_L7.2mm_W3.5mm_P5.00mm_FKS2_FKP2_MKS2_MKP2"
 			(at 65.7352 60.96 0)
 			(effects
 				(font
@@ -1309,15 +1319,15 @@
 			)
 		)
 		(pin "2"
-			(uuid "ba0f0477-64ad-4ced-ae8d-98956c83e249")
+			(uuid "bed66708-1562-4d92-96f6-0f8a42f6b212")
 		)
 		(pin "1"
-			(uuid "5ca07296-a004-4aaf-b12b-9ac0e9842124")
+			(uuid "35431d73-9d5a-4304-a927-f6aba0a73b3a")
 		)
 		(instances
 			(project ""
 				(path "/4c4828b4-32ca-4ff2-8f5a-f2a5abe04123"
-					(reference "C1")
+					(reference "C2")
 					(unit 1)
 				)
 			)
@@ -1598,7 +1608,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 60.96 52.07 90)
+		(at 58.42 52.07 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1607,7 +1617,7 @@
 		(fields_autoplaced yes)
 		(uuid "e0385f7e-ce11-4f2c-841e-be5e951c80de")
 		(property "Reference" "R3"
-			(at 60.96 45.72 90)
+			(at 58.42 45.72 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1615,7 +1625,7 @@
 			)
 		)
 		(property "Value" "R"
-			(at 60.96 48.26 90)
+			(at 58.42 48.26 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1623,7 +1633,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_THT:R_Axial_DIN0414_L11.9mm_D4.5mm_P15.24mm_Horizontal"
-			(at 60.96 53.848 90)
+			(at 58.42 53.848 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1632,7 +1642,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 60.96 52.07 0)
+			(at 58.42 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1641,7 +1651,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 60.96 52.07 0)
+			(at 58.42 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
