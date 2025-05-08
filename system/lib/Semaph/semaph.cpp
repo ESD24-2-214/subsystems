@@ -7,17 +7,17 @@
 */
 bool create_lock(SemaphoreHandle_t *lock){
     if(*lock == NULL){
-        DEBUG2("Creating....")
+        PRINT_DEBUG("Creating....\n")
         *lock = xSemaphoreCreateMutex();
         if(*lock == NULL){
-            DEBUG("xSemaphoreCreateMutex failed"," ");
+            ERROR_LOG("xSemaphoreCreateMutex failed"," ");
             return false;
         }
-        DEBUG2("Created....")
+        PRINT_DEBUG("Created....\n")
         return true;
     }
     return false;
-    DEBUG("Semaphore exist, lock != NULL"," ");
+    ERROR_LOG("Semaphore exist, lock != NULL"," ");
 }
 
 /* @brief This function is used to acquire a semaphore lock
@@ -28,7 +28,7 @@ bool create_lock(SemaphoreHandle_t *lock){
 */
 bool acquire_lock(SemaphoreHandle_t lock){
     if(lock == NULL || (xSemaphoreTake(lock, portMAX_DELAY) != pdTRUE) ){
-        DEBUG("could not acquire lock"," ");
+        ERROR_LOG("could not acquire lock"," ");
         return false;
     }
     return true;
@@ -40,11 +40,11 @@ bool acquire_lock(SemaphoreHandle_t lock){
 */
 bool release_lock(SemaphoreHandle_t lock){
     if(lock == NULL){
-        DEBUG("could not release lock"," ");
+        ERROR_LOG("could not release lock"," ");
         return false;
     }   
     if(xSemaphoreGive(lock) != pdTRUE){
-        DEBUG("could not release lock or lock was not acquired"," ");
+        ERROR_LOG("could not release lock or lock was not acquired"," ");
         return false;
     }
     return true;

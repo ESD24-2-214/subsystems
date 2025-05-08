@@ -39,7 +39,7 @@ void mag_resolution_config(mag_resolution mode){
     break;
   case UNKNOWN:
   set_bit_config(AK8963_ADDRESS, CNTL1, true, 4); // 16 bit resolution
-    DEBUG("Unknown resolution, defaulting to 16 bit", " ");
+    ERROR_LOG("Unknown resolution, defaulting to 16 bit", " ");
     break;
   default:
     break;
@@ -174,7 +174,7 @@ void read_magnetometer(Vector *mag_data)
   read(AK8963_ADDRESS, ST2, &stat, 1); // Read ST2 register to clear the data ready bit
   if (stat & 0b00001000) // Check for magnetic sensor overflow i.e. the data is invalid
   {
-    DEBUG("Magnetic sensor overflow", " ");  
+    ERROR_LOG("Magnetic sensor overflow", " ");  
     return; // If invalid we keep the last data
   }
   mag_data -> e1 = (int16_t)(data[1] << 8 | data[0]);
@@ -189,15 +189,15 @@ void read_magnetometer(Vector *mag_data)
 */
 int8_t read_data(SensorVector *Vec){
   if(Vec == NULL){
-    DEBUG("NULL pointer passed to read_data", " ");
+    ERROR_LOG("NULL pointer passed to read_data", " ");
     return -1;
   }
   if(Vec -> sensor == UNKNOWN){
-    DEBUG("Sensor is unknown", " ");
+    ERROR_LOG("Sensor is unknown", " ");
     return 1;
   }
   if(Vec -> scale_factor == UNKNOWN){
-    DEBUG("Scale factor is UNKNOWN", " ");
+    ERROR_LOG("Scale factor is UNKNOWN", " ");
     return 2;
   }
   uint8_t data[6];
@@ -224,23 +224,23 @@ int8_t read_data(SensorVector *Vec){
 /* @brief This function is used to scan the I2C bus and print the addresses of the devices found
 */
 void I2Cbus_SCCAN(void){
-  Serial.println(">>>Scanning I2C bus<<<");
+  PRINT_DEBUG(">>>Scanning I2C bus<<<\n");
   for (int i = 0; i < 128; i++)
   {
     MPU_I2C.beginTransmission(i);
     if (MPU_I2C.transmitWrite() == 0)
     {
-      Serial.print("I2C device found at address 0x");
+      PRINT_DEBUG("I2C device found at address 0x");
       if (i < 16)
       {
-        Serial.print("0");
+        PRINT_DEBUG("0");
       }
-      Serial.print(i, HEX);
-      Serial.println(" !");
+      PRINT_DEBUG((i, HEX));
+      PRINT_DEBUG(" !\n");
     }
     MPU_I2C.endTransmission();
   }
-  Serial.println(">>>Scanning I2C bus complete<<<");
+  PRINT_DEBUG(">>>Scanning I2C bus complete<<<\n");
 }
 
 /* @brief This function is used to make a self-test on the AK8963
@@ -252,7 +252,7 @@ set_bit_config(AK8963_ADDRESS, ASTC, true, 6); // Soft reset the AK8963
 mag_meas_config(SELF_TEST);
 delay(1000);
 read_data(&mag_data);
-Serial.println("mag: ");
+PRINT_DEBUG("mag: \n");
 dataPrint(&mag_data.vector);
 set_bit_config(AK8963_ADDRESS, ASTC, false, 6);
 mag_meas_config(POWER_DOWN);
@@ -281,15 +281,15 @@ void scale(Vector *Vec, double scale_factor){
 */
 int8_t factorScale(SensorVector *Vec){
   if(Vec == NULL){
-    DEBUG("NULL pointer passed to factorScale", " ");
+    ERROR_LOG("NULL pointer passed to factorScale", " ");
     return -1;
   }
   if(Vec -> sensor == UNKNOWN){
-    DEBUG("Sensor is unknown", " ");
+    ERROR_LOG("Sensor is unknown", " ");
     return 1;
   }
   if(Vec -> scale_factor == UNKNOWN){
-    DEBUG("Scale factor is UNKNOWN", " ");
+    ERROR_LOG("Scale factor is UNKNOWN", " ");
     return 2;
   }
 
@@ -318,7 +318,7 @@ int8_t factorScale(SensorVector *Vec){
 */
 int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor){
   if(Vec == NULL){
-    DEBUG("NULL pointer passed to initSensorVector", " ");
+    ERROR_LOG("NULL pointer passed to initSensorVector", " ");
     return -1;
   }
   switch (sensor_t)
@@ -336,11 +336,11 @@ int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor)
     Vec -> local_addr = GYRO_XOUT_H;
     break;
   default:
-    DEBUG("Sensor is unknown", " ");
+    ERROR_LOG("Sensor is unknown", " ");
     return 1;
   }
   if(scale_factor == UNKNOWN){
-    DEBUG("Scale factor is UNKNOWN", " ");
+    ERROR_LOG("Scale factor is UNKNOWN", " ");
     return 2;
   }
 
@@ -392,7 +392,7 @@ void gyro_fs_sel(gyro_full_scale_range range){
     bit2 = 0b11;
     break;
   default:
-    DEBUG("Unknown range", " ");
+    ERROR_LOG("Unknown range", " ");
     return;
   }
   set_2bit(MPU9255_ADDRESS, GYRO_CONFIG, bit2, 3);
@@ -419,7 +419,7 @@ void accel_fs_sel(acc_full_scale_range range){
     bit2 = 0b11;
     break;
   default:
-    DEBUG("Unknown range", " ");
+    ERROR_LOG("Unknown range", " ");
     return;
   }
   set_2bit(MPU9255_ADDRESS, ACCEL_CONFIG, bit2, 3);
@@ -429,12 +429,13 @@ void accel_fs_sel(acc_full_scale_range range){
 ** @param Vec: the vector to print
 */
 void dataPrint(Vector *Vec){
-  Serial.println("e1, e2, e3,");
-  Serial.print((Vec -> e1));
-  Serial.print(", ");
-  Serial.print((Vec -> e2));
-  Serial.print(", ");
-  Serial.println((Vec -> e3));
+  PRINT_DEBUG("e1, e2, e3,\n");
+  PRINT_DEBUG((Vec -> e1));
+  PRINT_DEBUG(", ");
+  PRINT_DEBUG((Vec -> e2));
+  PRINT_DEBUG(", ");
+  PRINT_DEBUG((Vec -> e3));
+  PRINT_DEBUG("\n");
 }
 
 /* @brief This function is used to print the data of important config registers of the AK8963
@@ -444,20 +445,21 @@ void dataPrint(Vector *Vec){
 void mag_debug_print(void){
   uint8_t data_byte = 0;
   read(AK8963_ADDRESS, CNTL1, &data_byte, 1);
-  Serial.print("CNTL1 : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("CNTL1 : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(AK8963_ADDRESS, CNTL2, &data_byte, 1);
-  Serial.print("CNTL2 : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nCNTL2 : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(AK8963_ADDRESS, ASTC, &data_byte, 1);
-  Serial.print("ASTC : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nASTC : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(AK8963_ADDRESS, ST1, &data_byte, 1);
-  Serial.print("ST1 : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nST1 : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(AK8963_ADDRESS, ST2, &data_byte, 1);
-  Serial.print("ST2 : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nST2 : ");
+  PRINT_DEBUG((data_byte, BIN));
+  PRINT_DEBUG("\n");
 }
 
 /* @brief This function is used to print the data of important config registers of the MPU9255
@@ -467,18 +469,19 @@ void mag_debug_print(void){
 void mpu_debug_print(void){
   uint8_t data_byte = 0;
   read(MPU9255_ADDRESS, PWR_MGMT_1, &data_byte, 1);
-  Serial.print("PWR_MGMT_1 : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("PWR_MGMT_1 : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(MPU9255_ADDRESS, PWR_MGMT_2, &data_byte, 1);
-  Serial.print("PWR_MGMT_2 : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nPWR_MGMT_2 : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(MPU9255_ADDRESS, MPU_CONFIG, &data_byte, 1);
-  Serial.print("CONFIG : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nCONFIG : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(MPU9255_ADDRESS, ACCEL_CONFIG, &data_byte, 1);
-  Serial.print("ACCEL_CONFIG : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nACCEL_CONFIG : ");
+  PRINT_DEBUG((data_byte, BIN));
   read(MPU9255_ADDRESS, GYRO_CONFIG, &data_byte, 1);
-  Serial.print("GYRO_CONFIG : ");
-  Serial.println(data_byte, BIN);
+  PRINT_DEBUG("\nGYRO_CONFIG : ");
+  PRINT_DEBUG((data_byte, BIN));
+  PRINT_DEBUG("\n");
 }

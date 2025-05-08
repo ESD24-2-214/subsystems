@@ -71,7 +71,7 @@ bool MasterI2C::setPins(int sdaPin, int sclPin)
     if(!i2cIsInit(esp_i2c_num)){
         initPins(sdaPin, sclPin);
     } else {
-        DEBUG("bus already initialized. change pins only when not."," ");
+        ERROR_LOG("bus already initialized. change pins only when not."," ");
     }
 
 #if !CONFIG_DISABLE_HAL_LOCKS 
@@ -85,14 +85,14 @@ bool MasterI2C::allocateI2CBuffer(void){
     if (rxBuffer == NULL) {
         rxBuffer = (uint8_t *)malloc(bufferSize);
         if (rxBuffer == NULL) {
-            DEBUG("Can't allocate memory for rxBuffer I2C_", esp_i2c_num);
+            ERROR_LOG("Can't allocate memory for rxBuffer I2C_", esp_i2c_num);
             return false;
         }
     }
     if (txBuffer == NULL) {
         txBuffer = (uint8_t *)malloc(bufferSize);
         if (txBuffer == NULL) {
-            DEBUG("Can't allocate memory for rxBuffer I2C_", esp_i2c_num);
+            ERROR_LOG("Can't allocate memory for rxBuffer I2C_", esp_i2c_num);
             freeI2CBuffer();  // free rxBuffer for safety!
             return false;
         }
@@ -115,7 +115,7 @@ void MasterI2C::freeI2CBuffer(void){
 size_t MasterI2C::setBufferSize(size_t bSize){
     // Maximum size .... HEAP limited ;-)
     if (bSize < 32) {    // 32 bytes is the I2C FIFO Len for ESP32/S2/S3/C3
-        DEBUG("Minimum Wire Buffer size is 32 bytes"," ");
+        ERROR_LOG("Minimum Wire Buffer size is 32 bytes"," ");
         return 0;
     }
 #if !CONFIG_DISABLE_HAL_LOCKS
@@ -131,7 +131,7 @@ size_t MasterI2C::setBufferSize(size_t bSize){
             if (!allocateI2CBuffer()) {
                 // failed! Error message already issued
                 bSize = 0; // returns error
-                DEBUG("Buffer allocation failed"," ");
+                ERROR_LOG("Buffer allocation failed"," ");
             }
         } // else nothing changes, all set!
     } else {
@@ -151,7 +151,7 @@ bool MasterI2C::begin(int sdaPin, int sclPin, uint32_t frequency){
     if(!create_acquire_lock( &(this->I2C_lock) ) ){return false;}
 #endif
     if(i2cIsInit(esp_i2c_num)){
-        DEBUG("Bus already started."," ");
+        ERROR_LOG("Bus already started."," ");
         started = true;
         goto end;
     }
@@ -221,12 +221,12 @@ void MasterI2C::beginTransmission(uint16_t address){
 
 #if !CONFIG_DISABLE_HAL_LOCKS
     if(transmitting || transmittingTask == xTaskGetCurrentTaskHandle() ){
-    DEBUG("Expected endTransmission not beginTransmission! Clearing..."," ");
+    ERROR_LOG("Expected endTransmission not beginTransmission! Clearing..."," ");
     //release lock
     release_lock(this->I2C_lock);
     }
     if(I2C_lock == NULL || acquire_lock(I2C_lock) != pdTRUE){
-        DEBUG("could not acquire lock"," ");
+        ERROR_LOG("could not acquire lock"," ");
         return;
     }
 #endif
@@ -242,11 +242,11 @@ uint8_t MasterI2C::transmitWrite(){
         || !(transmittingTask == xTaskGetCurrentTaskHandle())
 #endif    
     ){
-        DEBUG("Transmission not startet. Expected beginTransmission"," ");
+        ERROR_LOG("Transmission not startet. Expected beginTransmission"," ");
         return 4;
     }
     if (txBuffer == NULL){
-        DEBUG("NULL TX buffer pointer"," ");
+        ERROR_LOG("NULL TX buffer pointer"," ");
         return 4;
     }
     esp_err_t err = ESP_OK;
@@ -258,18 +258,18 @@ uint8_t MasterI2C::transmitWrite(){
         case ESP_ERR_TIMEOUT: return 5;
         default: break;
     }
-    DEBUG("i2cWrite returned Error: ", err);
+    ERROR_LOG("i2cWrite returned Error: ", err);
     return 4;
 }
 
 bool MasterI2C::endTransmission(void){
     if(transmitting == false){
-        DEBUG("Transmission not startet, expected beginTransmission"," ");
+        ERROR_LOG("Transmission not startet, expected beginTransmission"," ");
         return false;
     }
 #if !CONFIG_DISABLE_HAL_LOCKS
     if(this->I2C_lock == NULL || !release_lock(this->I2C_lock)){
-    DEBUG("Lock not found, expected begin"," ");
+    ERROR_LOG("Lock not found, expected begin"," ");
     return false;
     }   
 #endif 
@@ -280,7 +280,7 @@ bool MasterI2C::endTransmission(void){
 
 uint8_t MasterI2C::requestData(size_t rsize, bool writeRead, uint16_t address){
     if (rxBuffer == NULL || txBuffer == NULL){
-        DEBUG("NULL buffer pointer"," ");
+        ERROR_LOG("NULL buffer pointer"," ");
         return 0;
     }
     if(!transmitting 
@@ -288,7 +288,7 @@ uint8_t MasterI2C::requestData(size_t rsize, bool writeRead, uint16_t address){
     || this->transmittingTask != xTaskGetCurrentTaskHandle()
 #endif
     ){
-        DEBUG("Not transmitting"," ");
+        ERROR_LOG("Not transmitting"," ");
         return -1;
     }
     if(writeRead){
@@ -297,7 +297,7 @@ uint8_t MasterI2C::requestData(size_t rsize, bool writeRead, uint16_t address){
         esp_err_t err = ESP_OK;
         err = i2cWriteReadNonStop(esp_i2c_num, txAddress, txBuffer, txLength, rxBuffer, rsize, _timeOutMillis, &rxLength);
         if(err){;
-        DEBUG("i2cWriteReadNonStop returned Error: ", err);
+        ERROR_LOG("i2cWriteReadNonStop returned Error: ", err);
         }
         txLength = 0;
     } else{
@@ -306,7 +306,7 @@ uint8_t MasterI2C::requestData(size_t rsize, bool writeRead, uint16_t address){
         esp_err_t err = ESP_OK;
         err = i2cRead(esp_i2c_num, address, rxBuffer, rsize, _timeOutMillis, &rxLength);
         if(err){
-            DEBUG("i2cRead returned Error: ", err);
+            ERROR_LOG("i2cRead returned Error: ", err);
         }
     }
     return rxLength;
@@ -314,11 +314,11 @@ uint8_t MasterI2C::requestData(size_t rsize, bool writeRead, uint16_t address){
 
 size_t MasterI2C::write(uint8_t data){
     if (txBuffer == NULL){
-        DEBUG("NULL TX buffer pointer", " ");
+        ERROR_LOG("NULL TX buffer pointer", " ");
         return 0;
     }
     if(txLength >= bufferSize) {
-        DEBUG("TX buffer full", " ");
+        ERROR_LOG("TX buffer full", " ");
         return 0;
     }
     txBuffer[txLength++] = data;
@@ -346,7 +346,7 @@ int MasterI2C::read(void)
 {
     int value = -1;
     if (rxBuffer == NULL){
-        DEBUG("NULL RX buffer pointer"," ");
+        ERROR_LOG("NULL RX buffer pointer"," ");
         return value;
     }
     if(rxIndex < rxLength) {
@@ -359,7 +359,7 @@ int MasterI2C::peek(void)
 {
     int value = -1;
     if (rxBuffer == NULL){
-        DEBUG("NULL RX buffer pointer"," ");
+        ERROR_LOG("NULL RX buffer pointer"," ");
         return value;
     }
     if(rxIndex < rxLength) {
