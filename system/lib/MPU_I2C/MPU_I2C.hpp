@@ -107,6 +107,7 @@ void magnotometer_selftest(void);
 void magnotometer_softreset(void);
 void hard_reset_MPU9255(void);
 void I2Cbus_SCCAN(void);
+uint8_t MPU_I2Cbus_SCCAN(void);
 void mag_resolution_config(mag_resolution mode);
 uint8_t mag_meas_config(mag_meas_mode mode);
 void set_bit_config (uint8_t unit_addr, uint8_t local_addr, bool state, uint8_t bit_pos);

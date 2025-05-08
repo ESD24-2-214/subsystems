@@ -243,6 +243,33 @@ void I2Cbus_SCCAN(void){
   PRINT_DEBUG(">>>Scanning I2C bus complete<<<\n");
 }
 
+/* @brief This function is used to scan the I2C bus fir MPU units and print the addresses of the devices found
+** @returns Number of units that didn't return an acknowledge bit. 
+** If all were found retuns 0.
+** @note Unit addesses is defined localy in an array hard coded in the function
+*/
+uint8_t MPU_I2Cbus_SCCAN(void){
+  uint8_t no_ack = 0; // "No acknowledge bit" - counter
+  uint8_t units = 2; // Number of units
+  uint8_t unit_add_arr[units] = {MPU9255_ADDRESS, AK8963_ADDRESS}; // Unit addesses
+  PRINT_DEBUG(">>>Scanning for MPU units<<<\n");
+  for (int i = 0; i < units; i++)
+  {
+    MPU_I2C.beginTransmission(unit_add_arr[i]);
+    if (MPU_I2C.transmitWrite() == 0)
+    {
+      PRINT_DEBUG("I2C device found at address 0x");
+
+      if (i < 16) {PRINT_DEBUG("0");}
+      PRINT_DEBUG((unit_add_arr[i], HEX));
+      PRINT_DEBUG(" !\n");
+    } else { no_ack++; }
+    MPU_I2C.endTransmission();
+  }
+  PRINT_DEBUG(">>>Scanning I2C bus complete<<<\n");
+  return no_ack;
+}
+
 /* @brief This function is used to make a self-test on the AK8963
 */
 void magnotometer_selftest(void){
