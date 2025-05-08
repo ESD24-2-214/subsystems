@@ -466,8 +466,9 @@ void SensorRead(void *par) {
   uint16_t samples = 100;
   // Config thing
   bypass_to_magnometer(true);
-  I2Cbus_SCCAN();
-  // delay(2000);
+  if(MPU_I2Cbus_SCCAN()){
+    // ERROR
+  }
 
   mag_resolution_config(mag_res);
   mag_meas_config(mag_mode);
