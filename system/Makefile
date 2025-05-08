@@ -4,16 +4,22 @@
 # @file
 # @version 0.1
 
-all: build run monitor
+all: run monitor
 
 clean:
 
 build:
-	# When building include all files
 	pio run
 
 run:
-	pio run -t upload
+	pio run -t upload -e release
+
+run_debug:
+	pio run -t upload -e debug
+
+run_debug_control:
+	pio run -t upload -e debug_control
+	pio device monitor --raw
 
 monitor:
 	pio device monitor --raw

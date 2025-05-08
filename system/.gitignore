@@ -1,6 +1,7 @@
 .pio/
 .clang_complete/
-.ccls/
+.ccls
+.ccls-root
 .cache/
 .direnv/
 compile_commands.json

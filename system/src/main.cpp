@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "loop.hpp"
+#include "math.h"
 #include "math_stuff.hpp"
 #include <AK8963_ADDRESS.hpp>
 #include <Config.hpp>
@@ -67,14 +68,6 @@ void setup() {
   mutexSerial = xSemaphoreCreateMutex();
 
   // Tasks
-  xTaskCreatePinnedToCore(control_loop,   // Function to call
-                          "Control Loop", // Name of the task
-                          2048,           // Stack size in bytes
-                          NULL,           // Task input parameter
-                          1,    // Task priority (0 to configMAX_PRIORITIES - 1)
-                          NULL, // Task handle
-                          app_cpu); // Create Task1
-
   xTaskCreatePinnedToCore(SensorRead,   // Function to call
                           "SensorRead", // Name of the task
                           1024,         // Stack size in bytes
@@ -82,6 +75,14 @@ void setup() {
                           1,    // Task priority (0 to configMAX_PRIORITIES - 1)
                           NULL, // Task handle
                           pro_cpu); // Create SendToQueue
+
+  xTaskCreatePinnedToCore(control_loop,   // Function to call
+                          "Control Loop", // Name of the task
+                          3048,           // Stack size in bytes
+                          NULL,           // Task input parameter
+                          1,    // Task priority (0 to configMAX_PRIORITIES - 1)
+                          NULL, // Task handle
+                          app_cpu); // Create Task1
 
   xTaskCreatePinnedToCore(ActuatorControl,
                           "ActuatorControl", // Name of the task
@@ -164,11 +165,6 @@ void control_loop(void *pvParameters) {
   // Angular Velocity in WORLD
   Bivector angular_velocity_world; // radian / second
 
-  // This is a test with no real messurements
-  // This is a rotation angle the "sensors" are rotated by
-  // This must be done in SAT
-  Bivector sensor_rotation_angle_sat; // radian
-
   // test the first run
   int first_run = 1; // 1 for yes
 
@@ -178,145 +174,273 @@ void control_loop(void *pvParameters) {
   const TickType_t xFrequency = pdMS_TO_TICKS(int(control_loop_periode * 1000));
   xLastWakeTime = xTaskGetTickCount();
 
+  // Serial print
+  char buffer0[80];
+  char buffer1[80];
+  char buffer2[80];
+  int i = 0;
+
   // loop
   for (;;) {
+    i++;
     // Receive Data from Queue
     sensor_data.time_stamp_msec =
         pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     if (xQueueReceive(xQueueSensorData, &(sensor_data), (TickType_t)10) ==
         pdPASS) {
-          if(xSemaphoreTake(mutexSerial, 0) == pdTRUE){
-            // Write got data to serial
-            Serial.println("Resived Sensor Vector");
-            Serial.print("\tTime Stamp (msec): ");
-            Serial.println(sensor_data.time_stamp_msec);
-            Serial.print("\tMagno Vector { ");
-            Serial.print(sensor_data.magno_sat.e1);
-            Serial.print("e1, ");
-            Serial.print(sensor_data.magno_sat.e2);
-            Serial.print("e2 ");
-            Serial.print(sensor_data.magno_sat.e3);
-            Serial.println("e3 }");
-            Serial.print("\tSun Vector { ");
-            Serial.print(sensor_data.sun_sat.e1);
-            Serial.print("e1, ");
-            Serial.print(sensor_data.sun_sat.e2);
-            Serial.print("e2 ");
-            Serial.print(sensor_data.sun_sat.e3);
-            Serial.println("e3 }");
+      snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i\n\0",
+               sensor_data.time_stamp_msec);
+      snprintf(buffer1, sizeof(buffer1),
+               "\tMagno Vector { %.2ee1, %.2ee2, %.2ee3 } \n\0",
+               sensor_data.magno_sat.e1, sensor_data.magno_sat.e2,
+               sensor_data.magno_sat.e3);
+      snprintf(buffer2, sizeof(buffer2),
+               "\tSun Vector { %.2ee1, %.2ee2, %.2ee3 } \n\n\0",
+               sensor_data.sun_sat.e1, sensor_data.sun_sat.e2,
+               sensor_data.sun_sat.e3);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        // Write got data to serial
+        Serial.print("Resived Sensor Vector: ");
+        Serial.println(i);
+        Serial.print(buffer0);
+        Serial.print(buffer1);
+        Serial.print(buffer2);
 
-            xSemaphoreGive(mutexSerial);
-          }
-     
+        xSemaphoreGive(mutexSerial);
+      }
     } else {
-        if(xSemaphoreTake(mutexSerial, 0) == pdTRUE){
-          // Write running with old data
-          Serial.println("Using Old Sensor Vector");
-          Serial.print("\tOld Time Stamp (msec): ");
-          Serial.println(sensor_data.time_stamp_msec);
-          Serial.print("\tMagno Vector { ");
-          Serial.print(sensor_data.magno_sat.e1);
-          Serial.print("e1, ");
-          Serial.print(sensor_data.magno_sat.e2);
-          Serial.print("e2 ");
-          Serial.print(sensor_data.magno_sat.e3);
-          Serial.println("e3 }");
-          Serial.print("\tSun Vector { ");
-          Serial.print(sensor_data.sun_sat.e1);
-          Serial.print("e1, ");
-          Serial.print(sensor_data.sun_sat.e2);
-          Serial.print("e2 ");
-          Serial.print(sensor_data.sun_sat.e3);
-          Serial.println("e3 }");
+      snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i\n\0",
+               sensor_data.time_stamp_msec);
+      snprintf(buffer1, sizeof(buffer1),
+               "\tMagno Vector { %.2ee1, %.2ee2, %.2ee3 } \n\0",
+               sensor_data.magno_sat.e1, sensor_data.magno_sat.e2,
+               sensor_data.magno_sat.e3);
+      snprintf(buffer2, sizeof(buffer2),
+               "\tSun Vector { %.2ee1, %.2ee2, %.2ee3 } \n\n\0",
+               sensor_data.sun_sat.e1, sensor_data.sun_sat.e2,
+               sensor_data.sun_sat.e3);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        // Write running with old data
+        Serial.print("Resived Sensor Vector: ");
+        Serial.println(i);
+        Serial.print(buffer0);
+        Serial.print(buffer1);
+        Serial.print(buffer2);
+        xSemaphoreGive(mutexSerial);
+      }
+    }
+
+    // Do not run if both vectors are the zero vector
+    if ((fabsf(sensor_data.magno_sat.e1) < 1.0e-12f &&
+         fabsf(sensor_data.magno_sat.e2) < 1.0e-12f &&
+         fabsf(sensor_data.magno_sat.e3) < 1.0e-12f) ||
+        (fabsf(sensor_data.sun_sat.e1) < 1.0e-12f &&
+         fabsf(sensor_data.sun_sat.e2) < 1.0e-12f &&
+         fabsf(sensor_data.sun_sat.e3) < 1.0e-12f)) {
+
+      magnetorquer_scalars.scalar_for_e12 = 0.0f;
+      magnetorquer_scalars.scalar_for_e31 = 0.0f;
+      magnetorquer_scalars.scalar_for_e23 = 0.0f;
+
+      magnetorquer_scalars.time_stamp_msec =
+          pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
+      if (xQueueOverwrite(xQueueMagnetorquerScalarData,
+                          &magnetorquer_scalars) == pdPASS) {
+        snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i \n\0",
+                 magnetorquer_scalars.time_stamp_msec);
+        if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+          Serial.println("One of the sensor vectors is the zero vector");
+          Serial.print("Send Scalar to Actuator Controller: ");
+          Serial.println(i);
+          Serial.print(buffer0);
+          Serial.print("\tScalar for e12: ");
+          Serial.println(magnetorquer_scalars.scalar_for_e12);
+          Serial.print("\tScalar for e31: ");
+          Serial.println(magnetorquer_scalars.scalar_for_e31);
+          Serial.print("\tScalar for e23: ");
+          Serial.println(magnetorquer_scalars.scalar_for_e23);
+          Serial.println("");
 
           xSemaphoreGive(mutexSerial);
         }
+      }
 
-    }
-
-    // Get magnotometer output as bivector
-    magnetric_flux_density_sat = dual_vector_to_bivector(sensor_data.magno_sat);
-
-    // make change of basis matrix from messurements
-    cob_from_measure(cob_vec_from_world_to_sat, cob_vec_from_sat_to_world,
-                     cob_bivec_from_world_to_sat, cob_bivec_from_sat_to_world,
-                     sensor_data.sun_sat, sensor_data.magno_sat);
-
-    // The inerita is defined in SAT
-    // It is for bivectors
-    inertia_world = matrix_mul(cob_bivec_from_sat_to_world, inertia_sat);
-
-    // The reference is WORLD frame
-    Vector reference_world;
-    read_reference_vector(reference_world);
-
-    // the current postion is also fixed in SAT frame
-    Vector current_world =
-        matrix_vector_mul(cob_vec_from_sat_to_world, Vector{1, 0, 0});
-
-    // mix the last calcutated point dir
-    if (!first_run) {
-      // The calculated pointing direction from last iteration
-      // n-1
-      Vector last_calc_world;
-      read_current_vector(last_calc_world);
-
-      current_world = Vector{
-          .e1 = (current_world.e1 + last_calc_world.e1) * 0.5f,
-          .e2 = (current_world.e2 + last_calc_world.e2) * 0.5f,
-          .e3 = (current_world.e3 + last_calc_world.e3) * 0.5f,
-      };
     } else {
-      first_run = 0;
-    }
 
-    Bivector angle_err_world =
-        angle_difference_bivector(current_world, reference_world);
+      // Get magnotometer output as bivector
+      magnetric_flux_density_sat =
+          dual_vector_to_bivector(sensor_data.magno_sat);
 
-    Bivector pid_res_world =
-        pid(0.4f, 0.0f, 1.0f, angle_err_world, last_int_world, last_err_world,
-            control_loop_periode);
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "\tMag Bivector { %.2ee12, %.2ee31, %.2ee23 }: %i \n\n\0",
+               magnetric_flux_density_sat.e12, magnetric_flux_density_sat.e31,
+               magnetric_flux_density_sat.e23, i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        Serial.print(buffer0);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
 
-    Bivector torque_1_world = matrix_bivector_mul(inertia_world, pid_res_world);
+      // make change of basis matrix from messurements
+      cob_from_measure(cob_vec_from_world_to_sat, cob_vec_from_sat_to_world,
+                       cob_bivec_from_world_to_sat, cob_bivec_from_sat_to_world,
+                       sensor_data.sun_sat, sensor_data.magno_sat);
 
-    Bivector torque_2_world = actuator_test(
-        torque_1_world, cob_bivec_from_sat_to_world, magnetric_flux_density_sat,
-        mag1_sat, mag2_sat, mag3_sat, magnetorquer_scalars.scalar_for_e12,
-        magnetorquer_scalars.scalar_for_e31,
-        magnetorquer_scalars.scalar_for_e23);
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "\tCOB Matrix\n"
+               "\t{ %.2e, %.2e, %.2e\n",
+               cob_vec_from_world_to_sat.m11, cob_vec_from_world_to_sat.m12,
+               cob_vec_from_world_to_sat.m13);
+      snprintf(buffer1, sizeof(buffer1),
+               "\t  %.2e, %.2e, %.2e\n"
+               "\t  %.2e, %.2e, %.2e }: %i\n\n",
+               cob_vec_from_world_to_sat.m21, cob_vec_from_world_to_sat.m22,
+               cob_vec_from_world_to_sat.m23, cob_vec_from_world_to_sat.m31,
+               cob_vec_from_world_to_sat.m32, cob_vec_from_world_to_sat.m33, i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        Serial.print(buffer0);
+        Serial.print(buffer1);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
 
-    // send scalars to queue
-    magnetorquer_scalars.time_stamp_msec =
-        pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
-    if (xQueueOverwrite(xQueueMagnetorquerScalarData, &magnetorquer_scalars) ==
-        pdPASS) {
-          if(xSemaphoreTake(mutexSerial, 0) == pdTRUE){
-            Serial.println("Send Scalar to Actuator Controller");
-            Serial.print("\tTime Stamp (msec): ");
-            Serial.println(magnetorquer_scalars.time_stamp_msec);
-            Serial.print("\tScalar for e12: ");
-            Serial.println(magnetorquer_scalars.scalar_for_e12);
-            Serial.print("\tScalar for e31: ");
-            Serial.println(magnetorquer_scalars.scalar_for_e31);
-            Serial.print("\tScalar for e23: ");
-            Serial.println(magnetorquer_scalars.scalar_for_e23);
+      // The inerita is defined in SAT
+      // It is for bivectors
+      inertia_world = matrix_mul(cob_bivec_from_sat_to_world, inertia_sat);
 
-            xSemaphoreGive(mutexSerial);
-          }
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "Inertia WORLD Matrix\n"
+               "\t{ %.2e, %.2e, %.2e\n",
+               inertia_world.m11, inertia_world.m12, inertia_world.m13);
+      snprintf(buffer1, sizeof(buffer1),
+               "\t  %.2e, %.2e, %.2e\n"
+               "\t  %.2e, %.2e, %.2e }: %i\n\n",
+               inertia_world.m21, inertia_world.m22, inertia_world.m23,
+               inertia_world.m31, inertia_world.m32, inertia_world.m33, i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        Serial.print(buffer0);
+        Serial.print(buffer1);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
 
-    }
+      // The reference is WORLD frame
+      Vector reference_world;
+      read_reference_vector(reference_world);
 
-    Bivector rotation_angle_world =
-        angle_from_torque(torque_2_world, inertia_world, angular_velocity_world,
-                          control_loop_periode);
+      // the current postion is also fixed in SAT frame
+      Vector current_world =
+          matrix_vector_mul(cob_vec_from_sat_to_world, Vector{1, 0, 0});
 
-    // find the next point direction
-    Rotor rotor = rotor_form_halv_angle_bivector(
-        scale_bivector(rotation_angle_world, 0.5));
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "Reference WORLD Vector "
+               "{ %.2e, %.2e, %.2e }: %i\n",
+               reference_world.e1, reference_world.e2, reference_world.e3, i);
+      snprintf(buffer1, sizeof(buffer1),
+               "Current WORLD Vector "
+               "{ %.2e, %.2e, %.2e }: %i\n\n",
+               current_world.e1, current_world.e2, current_world.e3, i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        Serial.print(buffer0);
+        Serial.print(buffer1);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
 
-    // Write the calculated next current vector
-    overide_current_vector(rotate_vector(current_world, rotor));
+      // // mix the last calcutated point dir
+      // if (!first_run) {
+      //   // The calculated pointing direction from last iteration
+      //   // n-1
+      //   Vector last_calc_world;
+      //   read_current_vector(last_calc_world);
 
+      //   current_world = Vector{
+      //       .e1 = (current_world.e1 + last_calc_world.e1) * 0.5f,
+      //       .e2 = (current_world.e2 + last_calc_world.e2) * 0.5f,
+      //       .e3 = (current_world.e3 + last_calc_world.e3) * 0.5f,
+      //   };
+      // } else {
+      //   first_run = 0;
+      // }
+
+      Bivector angle_err_world =
+          angle_difference_bivector(current_world, reference_world);
+
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "Angle Error WORLD Bivector "
+               "{ %.2e, %.2e, %.2e }: %i\n\n",
+               angle_err_world.e12, angle_err_world.e31, angle_err_world.e23,
+               i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        Serial.print(buffer0);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
+
+      Bivector pid_res_world =
+          pid(0.4f, 0.0f, 1.0f, angle_err_world, last_int_world, last_err_world,
+              control_loop_periode);
+
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "PID Res WORLD Bivector "
+               "{ %.2e, %.2e, %.2e }: %i\n\n",
+               pid_res_world.e12, pid_res_world.e31, pid_res_world.e23, i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        Serial.print(buffer0);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
+
+      Bivector torque_1_world =
+          matrix_bivector_mul(inertia_world, pid_res_world);
+
+      Bivector torque_2_world =
+          actuator_test(torque_1_world, cob_bivec_from_sat_to_world,
+                        magnetric_flux_density_sat, mag1_sat, mag2_sat,
+                        mag3_sat, magnetorquer_scalars.scalar_for_e12,
+                        magnetorquer_scalars.scalar_for_e31,
+                        magnetorquer_scalars.scalar_for_e23);
+
+      // send scalars to queue
+      magnetorquer_scalars.time_stamp_msec =
+          pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
+      if (xQueueOverwrite(xQueueMagnetorquerScalarData,
+                          &magnetorquer_scalars) == pdPASS) {
+        snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i \n\0",
+                 magnetorquer_scalars.time_stamp_msec);
+        if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+          Serial.print("Send Scalar to Actuator Controller: ");
+          Serial.println(i);
+          Serial.print(buffer0);
+          Serial.print("\tScalar for e12: ");
+          Serial.println(magnetorquer_scalars.scalar_for_e12);
+          Serial.print("\tScalar for e31: ");
+          Serial.println(magnetorquer_scalars.scalar_for_e31);
+          Serial.print("\tScalar for e23: ");
+          Serial.println(magnetorquer_scalars.scalar_for_e23);
+          Serial.println("");
+
+          xSemaphoreGive(mutexSerial);
+        }
+      }
+
+      Bivector rotation_angle_world =
+          angle_from_torque(torque_2_world, inertia_world,
+                            angular_velocity_world, control_loop_periode);
+
+      // find the next point direction
+      Rotor rotor = rotor_form_halv_angle_bivector(
+          scale_bivector(rotation_angle_world, 0.5));
+
+      // Write the calculated next current vector
+      overide_current_vector(rotate_vector(current_world, rotor));
+    } // end of zero vector test
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
@@ -343,7 +467,7 @@ void SensorRead(void *par) {
   // Config thing
   bypass_to_magnometer(true);
   I2Cbus_SCCAN();
-  delay(2000);
+  // delay(2000);
 
   mag_resolution_config(mag_res);
   mag_meas_config(mag_mode);
@@ -361,8 +485,25 @@ void SensorRead(void *par) {
                      .sun_sat = sun_data};
 
   // Task loop
-  while (1) {
 
+#if defined(DEBUG_CONTROL)
+  while (1) {
+    data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
+    data.sun_sat = Vector{
+        .e1 = 0.7071f,
+        .e2 = -0.7071f,
+        .e3 = 0.0f,
+    };
+    float magnetric_flux_density_norm = 0.00002f; // 20 * 10^(-6) tesla
+    data.magno_sat = Vector{
+        .e1 = 0.7071f * magnetric_flux_density_norm,
+        .e2 = 0.7071f * magnetric_flux_density_norm,
+        .e3 = 0.0f,
+    };
+    xQueueOverwrite(xQueueSensorData, &data);
+  }
+#else
+  while (1) {
     read_data(&gyro_data);
     read_data(&acc_data);
     read_data(&mag_data);
@@ -373,6 +514,7 @@ void SensorRead(void *par) {
     data.magno_sat = mag_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
   }
+#endif
 }
 
 void ActuatorControl(void *par) {
@@ -381,20 +523,19 @@ void ActuatorControl(void *par) {
   while (1) {
     if (xQueueReceive(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
         pdPASS) {
-          if(xSemaphoreTake(mutexSerial, 0) == pdTRUE){
-      Serial.println("Received the following data: ");
-      Serial.print("\te12: ");
-      Serial.println(receivedScalarData.scalar_for_e12, 6);
-      Serial.print("\te31: ");
-      Serial.println(receivedScalarData.scalar_for_e31, 6);
-      Serial.print("\te23: ");
-      Serial.println(receivedScalarData.scalar_for_e23, 6);
-      Serial.print("\tTimeStamp(msec): ");
-      Serial.println(receivedScalarData.time_stamp_msec);
+      if (xSemaphoreTake(mutexSerial, 100) == pdTRUE) {
+        Serial.println("Received the following data: ");
+        Serial.print("\tTimeStamp(msec): ");
+        Serial.println(receivedScalarData.time_stamp_msec);
+        Serial.print("\te12: ");
+        Serial.println(receivedScalarData.scalar_for_e12, 6);
+        Serial.print("\te31: ");
+        Serial.println(receivedScalarData.scalar_for_e31, 6);
+        Serial.print("\te23: ");
+        Serial.println(receivedScalarData.scalar_for_e23, 6);
 
-            xSemaphoreGive(mutexSerial);
-          }
-
+        xSemaphoreGive(mutexSerial);
+      }
     }
     PulseMag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
     PulseMag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
@@ -407,10 +548,10 @@ void overide_reference_vector(Vector new_reference_world) {
     reference_world = new_reference_world;
     xSemaphoreGive(mutexRefernceVector);
   } else {
-    Serial.println("Could not take mutexReferenceVector");
-    Serial.println("No change happend");
-    Serial.print("\tTime Stamp: ");
-    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+    // Serial.println("Could not take mutexReferenceVector");
+    // Serial.println("No change happend");
+    // Serial.print("\tTime Stamp: ");
+    // Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
   }
 }
 void read_reference_vector(Vector &local_reference_world) {
@@ -418,10 +559,10 @@ void read_reference_vector(Vector &local_reference_world) {
     local_reference_world = reference_world;
     xSemaphoreGive(mutexRefernceVector);
   } else {
-    Serial.println("Could not take mutexReferenceVector");
-    Serial.println("No vector was copied");
-    Serial.print("\tTime Stamp: ");
-    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+    // Serial.println("Could not take mutexReferenceVector");
+    // Serial.println("No vector was copied");
+    // Serial.print("\tTime Stamp: ");
+    // Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
   }
 }
 
@@ -430,10 +571,10 @@ void overide_current_vector(Vector new_current_world) {
     current_world = new_current_world;
     xSemaphoreGive(mutexCurrentVector);
   } else {
-    Serial.println("Could not take mutexCurrentVector");
-    Serial.println("No change happend");
-    Serial.print("\tTime Stamp: ");
-    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+    // Serial.println("Could not take mutexCurrentVector");
+    // Serial.println("No change happend");
+    // Serial.print("\tTime Stamp: ");
+    // Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
   }
 }
 void read_current_vector(Vector &local_current_world) {
@@ -441,9 +582,9 @@ void read_current_vector(Vector &local_current_world) {
     local_current_world = current_world;
     xSemaphoreGive(mutexCurrentVector);
   } else {
-    Serial.println("Could not take mutexCurrentVector");
-    Serial.println("No vector was copied");
-    Serial.print("\tTime Stamp: ");
-    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
+    // Serial.println("Could not take mutexCurrentVector");
+    // Serial.println("No vector was copied");
+    // Serial.print("\tTime Stamp: ");
+    // Serial.println(pdTICKS_TO_MS(xTaskGetTickCount())); // millisecond
   }
 }
