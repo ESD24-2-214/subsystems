@@ -175,8 +175,6 @@ void control_loop(void *pvParameters) {
 
   // Time
   TickType_t xLastWakeTime;
-  float control_loop_periode = 0.500; // second
-  const TickType_t xFrequency = pdMS_TO_TICKS(int(control_loop_periode * 1000));
   xLastWakeTime = xTaskGetTickCount();
 
   // Serial print
@@ -388,8 +386,8 @@ void control_loop(void *pvParameters) {
 #endif
 
       Bivector pid_res_world =
-          pid(0.4f, 0.0f, 1.0f, angle_err_world, last_int_world, last_err_world,
-              control_loop_periode);
+          pid(K_P, K_I, K_D, angle_err_world, last_int_world, last_err_world,
+              CONTROL_PERIODE);
 
 #if defined(DEBUG_CONTROL)
       snprintf(buffer0, sizeof(buffer0),
@@ -437,7 +435,7 @@ void control_loop(void *pvParameters) {
 
       Bivector rotation_angle_world =
           angle_from_torque(torque_2_world, inertia_world,
-                            angular_velocity_world, control_loop_periode);
+                            angular_velocity_world, CONTROL_PERIODE);
 
       // find the next point direction
       Rotor rotor = rotor_form_halv_angle_bivector(
@@ -446,7 +444,7 @@ void control_loop(void *pvParameters) {
       // Write the calculated next current vector
       overide_current_vector(rotate_vector(current_world, rotor));
     } // end of zero vector test
-    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(int(CONTROL_PERIODE * 1000)));
   }
 }
 
@@ -467,8 +465,6 @@ void SensorRead(void *par) {
   SensorVector accl_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
   Vector sun_data = {0, 0, 0}; // LDR data structure
-  uint16_t period = 10;        // millisecond
-  uint16_t samples = 100;
   // Config thing
   bypass_to_magnometer(true);
   if (MPU_I2Cbus_SCCAN()) {
@@ -513,7 +509,7 @@ void SensorRead(void *par) {
     read_data(&gyro_data);
     read_data(&accl_data);
     read_data(&mag_data);
-    sun_read_data(&sun_data, period, samples);
+    sun_read_data(&sun_data, LDR_PERIODE, LDR_SAMPLES);
 
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = sun_data;
