@@ -471,7 +471,7 @@ void SensorRead(void *par) {
   uint16_t samples = 100;
   // Config thing
   bypass_to_magnometer(true);
-  if(MPU_I2Cbus_SCCAN()){
+  if (MPU_I2Cbus_SCCAN()) {
     // ERROR
   }
 
@@ -529,7 +529,7 @@ void ActuatorControl(void *par) {
   struct MagnetorquerScalarData receivedScalarData;
 
   while (1) {
-    if (xQueuePeek(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
+    if (xQueueReceive(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
         pdPASS) {
       if (xSemaphoreTake(mutexSerial, 100) == pdTRUE) {
         Serial.println("Received the following data: ");

@@ -6,10 +6,10 @@
  ** @param ldr_data: pointer to the LDRData_t structure
  */
 void ldr_read(LDRData_t *ldr_data) {
-  ldr_data->F = analogRead(LDR_PIN_F); // Read the LDR value
-  ldr_data->L = analogRead(LDR_PIN_L); // Read the LDR value
-  ldr_data->R = analogRead(LDR_PIN_R); // Read the LDR value
-  ldr_data->B = analogRead(LDR_PIN_B); // Read the LDR value
+  ldr_data->F = 4095 - analogRead(LDR_PIN_F); // Read the LDR value
+  ldr_data->L = 4095 - analogRead(LDR_PIN_L); // Read the LDR value
+  ldr_data->R = 4095 - analogRead(LDR_PIN_R); // Read the LDR value
+  ldr_data->B = 4095 - analogRead(LDR_PIN_B); // Read the LDR value
 }
 
 /* @brief This function sample reads the analog LDR values from the GPIO pins
@@ -18,7 +18,7 @@ void ldr_read(LDRData_t *ldr_data) {
 ** @param t_ms: time in milliseconds to wait between samples
 ** @param samples: number of samples to take
 ** @note It takes the mean of the measuerd samples
- */
+*/
 void ldr_read_data(LDRData_t *ldr_data, uint16_t t_ms, uint16_t samples) {
   LDRData_t temp_data = {0}; // Initialize temp data structure
   LDRData_t sum_data = {0};  // Initialize temp data structure
@@ -57,8 +57,8 @@ void ldr_data_print(LDRData_t *ldr_data) {
   Serial.println(ldr_data->B);
 }
 
-LDRCalibration_t ldr_calibrate_test(void){
-  LDRData_t value = {0,0,0,0};
+LDRCalibration_t ldr_calibrate_test(void) {
+  LDRData_t value = {0, 0, 0, 0};
   LDRCalibration_t error_diff = {0, 0, 0};
   ldr_read_data(&value, 10, 20);
   error_diff.e1 = (value.F - value.B);
@@ -71,8 +71,9 @@ LDRCalibration_t ldr_calibrate_test(void){
 ** and convert them to a vector
 ** @param sun_data: pointer to a Vector struct¨
 ** @param t_ms: sample peiod
-** @param samples: amount of samples to take 
-** @note It calls the ldr_read_data funktion. It takes the mean of the measuerd samples.
+** @param samples: amount of samples to take
+** @note It calls the ldr_read_data funktion. It takes the mean of the measuerd
+*samples.
 */
 void sun_read_data(Vector *sun_data, uint16_t t_ms, uint16_t samples) {
   LDRData_t ldr_data = {0, 0, 0, 0};
