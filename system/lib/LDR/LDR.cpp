@@ -13,10 +13,11 @@ void ldr_read(LDRData_t *ldr_data) {
 }
 
 /* @brief This function sample reads the analog LDR values from the GPIO pins
- *set in the Config.hpp file
- ** @param ldr_data: pointer to the LDRData_t structure
- ** @param t_ms: time in milliseconds to wait between samples
- ** @param samples: number of samples to take
+** set in the Config.hpp file
+** @param ldr_data: pointer to the LDRData_t structure
+** @param t_ms: time in milliseconds to wait between samples
+** @param samples: number of samples to take
+** @note It takes the mean of the measuerd samples
  */
 void ldr_read_data(LDRData_t *ldr_data, uint16_t t_ms, uint16_t samples) {
   LDRData_t temp_data = {0}; // Initialize temp data structure
@@ -56,6 +57,23 @@ void ldr_data_print(LDRData_t *ldr_data) {
   Serial.println(ldr_data->B);
 }
 
+LDRCalibration_t ldr_calibrate_test(void){
+  LDRData_t value = {0,0,0,0};
+  LDRCalibration_t error_diff = {0, 0, 0};
+  ldr_read_data(&value, 10, 20);
+  error_diff.e1 = (value.F - value.B);
+  error_diff.e2 = (value.L - value.R);
+
+  return error_diff;
+}
+
+/* @brief This function is used to read sensor values fra LDR sensors
+** and convert them to a vector
+** @param sun_data: pointer to a Vector struct¨
+** @param t_ms: sample peiod
+** @param samples: amount of samples to take 
+** @note It calls the ldr_read_data funktion. It takes the mean of the measuerd samples.
+*/
 void sun_read_data(Vector *sun_data, uint16_t t_ms, uint16_t samples) {
   LDRData_t ldr_data = {0, 0, 0, 0};
   ldr_read_data(&ldr_data, t_ms, samples);
