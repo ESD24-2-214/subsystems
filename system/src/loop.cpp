@@ -1,6 +1,7 @@
 #include "loop.hpp"
 #include "math_stuff.hpp"
 #include <cmath>
+#include <stdio.h> // fixes the printf not declared error but FNPRINT is stil a problem
 
 void measure(Bivector sensor_rotation_angle_sat, Vector &sun_sensor_sat,
              Vector &mag_sensor_sat) {
