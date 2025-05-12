@@ -53,6 +53,9 @@ void setup() {
   // Enable H-Bridges
   digitalWrite(HIGH, MAG1_EN);
   digitalWrite(HIGH, MAG2_EN);
+  // Set PWM frequncy
+  analogWriteResolution((uint8_t)(PWM_RES));
+  analogWriteFrequency((uint32_t)(PWM_FREQ));
 
   // Queues
   xQueueSensorData = xQueueCreate(1, sizeof(SensorData));
@@ -353,21 +356,21 @@ void control_loop(void *pvParameters) {
       }
 #endif
 
-      // // mix the last calcutated point dir
-      // if (!first_run) {
-      //   // The calculated pointing direction from last iteration
-      //   // n-1
-      //   Vector last_calc_world;
-      //   read_current_vector(last_calc_world);
+      // mix the last calcutated point dir
+      if (!first_run) {
+        // The calculated pointing direction from last iteration
+        // n-1
+        Vector last_calc_world;
+        read_current_vector(last_calc_world);
 
-      //   current_world = Vector{
-      //       .e1 = (current_world.e1 + last_calc_world.e1) * 0.5f,
-      //       .e2 = (current_world.e2 + last_calc_world.e2) * 0.5f,
-      //       .e3 = (current_world.e3 + last_calc_world.e3) * 0.5f,
-      //   };
-      // } else {
-      //   first_run = 0;
-      // }
+        current_world = Vector{
+            .e1 = (current_world.e1 + last_calc_world.e1) * 0.5f,
+            .e2 = (current_world.e2 + last_calc_world.e2) * 0.5f,
+            .e3 = (current_world.e3 + last_calc_world.e3) * 0.5f,
+        };
+      } else {
+        first_run = 0;
+      }
 
       Bivector angle_err_world =
           angle_difference_bivector(current_world, reference_world);
@@ -542,8 +545,8 @@ void ActuatorControl(void *par) {
         xSemaphoreGive(mutexSerial);
       }
     }
-    PulseMag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
-    PulseMag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
+    pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
+    pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
   }
 }
 

@@ -1,7 +1,8 @@
 #ifndef HBRO
 #define HBRO
 #include "Arduino.h"
+#include "Config.hpp"
 
-void PulseMag(float scalar, int pinCW, int pinCCW);
+void pulse_mag(float scalar, int pinCW, int pinCCW);
 
 #endif

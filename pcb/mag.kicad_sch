@@ -89,13 +89,13 @@
 	)
 	(bus
 		(pts
-			(xy 69.85 76.2) (xy 91.44 76.2)
+			(xy 73.66 76.2) (xy 91.44 76.2)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "3050dd80-1275-4871-b13a-837e93f45302")
+		(uuid "37c556bb-9621-4553-b256-e94715da55cf")
 	)
 	(bus
 		(pts

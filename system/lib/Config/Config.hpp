@@ -29,8 +29,8 @@ static const BaseType_t app_cpu = 1;
 #define LDR_PIN_L 1 // LDR GPIO pin number
 #define LDR_PIN_R 2 // LDR GPIO pin number
 #define LDR_PIN_B 0 // LDR GPIO pin number
-#define MAG1_EN 21     //
-#define MAG2_EN 10     //
+#define MAG1_EN 21  //
+#define MAG2_EN 10  //
 #define MAG1_CW 19  //
 #define MAG1_CCW 18 //
 #define MAG2_CW 20  //
@@ -38,5 +38,9 @@ static const BaseType_t app_cpu = 1;
 #define LED1 5      //
 #define LED2 6      //
 #define LED3 7      //
+
+#define PWM_RES 10       // in bits
+#define PWM_RES_MAX 1023 // 2^10
+#define PWM_FREQ 1e4     // in MHz
 
 #endif
