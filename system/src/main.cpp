@@ -15,6 +15,8 @@ struct SensorData {
   uint32_t time_stamp_msec;
   Vector magno_sat;
   Vector sun_sat;
+  Vector gyro_sat;
+  Vector accl_sat;
 };
 struct MagnetorquerScalarData {
   uint32_t time_stamp_msec;
@@ -186,7 +188,7 @@ void control_loop(void *pvParameters) {
     // Receive Data from Queue
     sensor_data.time_stamp_msec =
         pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
-    if (xQueueReceive(xQueueSensorData, &(sensor_data), (TickType_t)10) ==
+    if (xQueuePeek(xQueueSensorData, &(sensor_data), (TickType_t)10) ==
         pdPASS) {
       snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i\n\0",
                sensor_data.time_stamp_msec);
@@ -459,7 +461,7 @@ void SensorRead(void *par) {
   const double accel_scale = acc_scale_factor2g;  // accel scale factor
   const double mag_scale = mag_scale_factor2;     // mag scale factor
   SensorVector gyro_data = {unknown, 0, 0, 0, 0};
-  SensorVector acc_data = {unknown, 0, 0, 0, 0};
+  SensorVector accl_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
   Vector sun_data = {0, 0, 0}; // LDR data structure
   uint16_t period = 10;        // millisecond
@@ -479,7 +481,7 @@ void SensorRead(void *par) {
 
   // Init of sensorvectors
   initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
-  initSensorVector(&acc_data, ACCELEROMETER, accel_scale);
+  initSensorVector(&accl_data, ACCELEROMETER, accel_scale);
   initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
   SensorData data = {.time_stamp_msec = (xTaskGetTickCount()),
                      .magno_sat = mag_data.vector,
@@ -506,13 +508,15 @@ void SensorRead(void *par) {
 #else
   while (1) {
     read_data(&gyro_data);
-    read_data(&acc_data);
+    read_data(&accl_data);
     read_data(&mag_data);
     sun_read_data(&sun_data, period, samples);
 
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = sun_data;
     data.magno_sat = mag_data.vector;
+    data.gyro_sat = gyro_data.vector;
+    data.accl_sat = accl_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
   }
 #endif
@@ -522,7 +526,7 @@ void ActuatorControl(void *par) {
   struct MagnetorquerScalarData receivedScalarData;
 
   while (1) {
-    if (xQueueReceive(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
+    if (xQueuePeek(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
         pdPASS) {
       if (xSemaphoreTake(mutexSerial, 100) == pdTRUE) {
         Serial.println("Received the following data: ");
