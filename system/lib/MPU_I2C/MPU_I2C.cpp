@@ -168,8 +168,14 @@ void read_gryroscope(Vector *gyro_data)
 */
 void read_magnetometer(Vector *mag_data)
 {
-  uint8_t stat;
-  uint8_t data[6];
+  uint8_t stat = 0;
+  uint8_t data[6] = {0};
+  read(AK8963_ADDRESS, ST2, &stat, 1);   // Read ST2 register to clear the data
+  do
+  {
+    read(AK8963_ADDRESS, ST1, &stat, 1); // Read ST1 to cheak bit 0 for the data bit ready
+  } while (!(stat & 0b00000001)); // May be agresive use of CPU time but we use to cores Max wait 9ms typ 7.2ms
+
   read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
   read(AK8963_ADDRESS, ST2, &stat, 1); // Read ST2 register to clear the data ready bit
   if (stat & 0b00001000) // Check for magnetic sensor overflow i.e. the data is invalid
