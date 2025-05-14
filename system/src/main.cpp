@@ -34,6 +34,9 @@ Vector current_world;
 SemaphoreHandle_t mutexRefernceVector = NULL;
 SemaphoreHandle_t mutexCurrentVector = NULL;
 SemaphoreHandle_t mutexSerial = NULL;
+SemaphoreHandle_t binarykey1 = NULL;
+SemaphoreHandle_t binarykey2 = NULL;
+SemaphoreHandle_t binarykey3 = NULL;
 
 void overide_reference_vector(Vector new_reference_world);
 void read_reference_vector(Vector &local_reference_world);
@@ -49,21 +52,11 @@ void setup() {
   Serial.begin(115200); // Initialize serial monitor
   while (!Serial) {
   }
-
-  // Enable H-Bridges
-  digitalWrite(HIGH, MAG1_EN);
-  digitalWrite(HIGH, MAG2_EN);
-  // Set PWM frequncy
-  analogWriteResolution((uint8_t)(PWM_RES));
-  analogWriteFrequency((uint32_t)(PWM_FREQ));
-
   // Queues
   xQueueSensorData = xQueueCreate(1, sizeof(SensorData));
   xQueueMagnetorquerScalarData =
       xQueueCreate(1, sizeof(MagnetorquerScalarData));
-
   if (xQueueSensorData == NULL) {
-
     /* Queue was not created and must not be used. */
   }
 
@@ -71,16 +64,21 @@ void setup() {
   mutexRefernceVector = xSemaphoreCreateMutex();
   mutexCurrentVector = xSemaphoreCreateMutex();
   mutexSerial = xSemaphoreCreateMutex();
+  // Binary
+  binarykey1 = xSemaphoreCreateMutex();
+  binarykey2 = xSemaphoreCreateMutex();
+  binarykey3 = xSemaphoreCreateMutex();
+
 
   // Tasks
   xTaskCreatePinnedToCore(SensorRead,   // Function to call
                           "SensorRead", // Name of the task
-                          1024,         // Stack size in bytes
+                          2024,         // Stack size in bytes
                           NULL,         // Task input parameter
                           1,    // Task priority (0 to configMAX_PRIORITIES - 1)
                           NULL, // Task handle
                           pro_cpu); // Create SendToQueue
-
+ 
   xTaskCreatePinnedToCore(control_loop,   // Function to call
                           "Control Loop", // Name of the task
                           3048,           // Stack size in bytes
@@ -88,7 +86,7 @@ void setup() {
                           1,    // Task priority (0 to configMAX_PRIORITIES - 1)
                           NULL, // Task handle
                           app_cpu); // Create Task1
-
+    
   xTaskCreatePinnedToCore(ActuatorControl,
                           "ActuatorControl", // Name of the task
                           1024,              // Stack size in bytes
@@ -449,10 +447,10 @@ void control_loop(void *pvParameters) {
 }
 
 void SensorRead(void *par) {
+  xSemaphoreTake(binarykey1, portMAX_DELAY);
   if (MPU_I2C.begin(SDA, SCL, ClockSpeed) == false) {
     Serial.println("I2C begin Failed!");
   }
-
   // Define param of task
   const mag_resolution mag_res = BIT_16;          // mag resolution
   const mag_meas_mode mag_mode = MEAS_MODE1;      // mag mode
@@ -475,8 +473,7 @@ void SensorRead(void *par) {
   mag_meas_config(mag_mode);
   gyro_fs_sel(gyro_fs);
   accel_fs_sel(accel_fs);
-  write(AK8963_ADDRESS, ASTC,
-        0x00); // Set clock source to PLL with X axis gyroscope reference
+  write(AK8963_ADDRESS, ASTC, 0x00); // Making sure that selftest mode i off
 
   // Init of sensorvectors
   initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
@@ -484,10 +481,11 @@ void SensorRead(void *par) {
   initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
   SensorData data = {.time_stamp_msec = (xTaskGetTickCount()),
                      .magno_sat = mag_data.vector,
-                     .sun_sat = sun_data};
-
+                     .sun_sat = sun_data,
+                     .gyro_sat = gyro_data.vector,
+                     .accl_sat = accl_data.vector};
+  
   // Task loop
-
 #if defined(DEBUG_CONTROL)
   while (1) {
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
@@ -508,7 +506,18 @@ void SensorRead(void *par) {
   while (1) {
     read_data(&gyro_data);
     read_data(&accl_data);
-    read_data(&mag_data);
+    
+    xSemaphoreTake(binarykey3, portMAX_DELAY);
+      xSemaphoreGive(binarykey1); // Signal to ActuatorControl to stop magnotorqer
+        xSemaphoreTake(binarykey2, portMAX_DELAY); // wait for signal
+
+        read_data(&mag_data); // measure magneticfield
+
+        xSemaphoreGive(binarykey2); // return key
+      xSemaphoreTake(binarykey1, portMAX_DELAY); // Retrive key
+    xSemaphoreGive(binarykey3);
+   
+
     sun_read_data(&sun_data, LDR_PERIODE, LDR_SAMPLES);
 
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
@@ -522,24 +531,42 @@ void SensorRead(void *par) {
 }
 
 void ActuatorControl(void *par) {
+  xSemaphoreTake(binarykey2, portMAX_DELAY);
   struct MagnetorquerScalarData receivedScalarData;
-
+  // Enable H-Bridges
+  enable_mag(true);
+  // Set PWM frequncy
+  analogWriteResolution((uint8_t)(PWM_RES));
+  analogWriteFrequency((uint32_t)(PWM_FREQ));
   while (1) {
     if (xQueueReceive(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
         pdPASS) {
-      if (xSemaphoreTake(mutexSerial, 100) == pdTRUE) {
-        Serial.println("Received the following data: ");
-        Serial.print("\tTimeStamp(msec): ");
-        Serial.println(receivedScalarData.time_stamp_msec);
-        Serial.print("\te12: ");
-        Serial.println(receivedScalarData.scalar_for_e12, 6);
-        Serial.print("\te31: ");
-        Serial.println(receivedScalarData.scalar_for_e31, 6);
-        Serial.print("\te23: ");
-        Serial.println(receivedScalarData.scalar_for_e23, 6);
+      if(!(mutexSerial == NULL)) {
+        if (xSemaphoreTake(mutexSerial, 100) == pdTRUE) {
+          Serial.println("Received the following data: ");
+          Serial.print("\tTimeStamp(msec): ");
+          Serial.println(receivedScalarData.time_stamp_msec);
+          Serial.print("\te12: ");
+          Serial.println(receivedScalarData.scalar_for_e12, 6);
+          Serial.print("\te31: ");
+          Serial.println(receivedScalarData.scalar_for_e31, 6);
+          Serial.print("\te23: ");
+          Serial.println(receivedScalarData.scalar_for_e23, 6);
 
-        xSemaphoreGive(mutexSerial);
+          xSemaphoreGive(mutexSerial);
+        }
       }
+    }
+
+    if (xSemaphoreTake(binarykey1, pdMS_TO_TICKS(1)) == pdTRUE){ // Check for signal from SensorRead
+          enable_mag(false); // Turn off Magnotorqer
+          vTaskDelay(pdMS_TO_TICKS(1)); // Wait for magnototorer too power down
+        xSemaphoreGive(binarykey1); // signal to SensorRead to measure magneticfield
+        xSemaphoreGive(binarykey2); // give back the first key
+          xSemaphoreTake(binarykey3, portMAX_DELAY); // wait for SensorRead to be done
+            enable_mag(true);
+          xSemaphoreGive(binarykey3);
+        xSemaphoreTake(binarykey2, portMAX_DELAY);
     }
     pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
     pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);

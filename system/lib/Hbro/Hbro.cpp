@@ -11,3 +11,13 @@ void pulse_mag(float scalar, int pinCW, int pinCCW) {
     analogWrite(pinCCW, (int)(floorf(PWM_RES_MAX * abs(scalar))));
   }
 }
+
+void enable_mag(bool state){
+  if(state){
+    digitalWrite(MAG1_EN, HIGH);
+    digitalWrite(MAG2_EN, HIGH);
+  } else {
+    digitalWrite(MAG1_EN, LOW);
+    digitalWrite(MAG2_EN, LOW);
+  }
+}
