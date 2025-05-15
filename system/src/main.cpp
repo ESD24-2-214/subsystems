@@ -29,7 +29,7 @@ QueueHandle_t xQueueMagnetorquerScalarData = NULL;
 
 // Mutex
 Vector reference_world = Vector{.e1 = 0, .e2 = 1, .e3 = 0};
-Vector current_world;
+Vector current_world = {0,0,0};
 
 SemaphoreHandle_t mutexRefernceVector = NULL;
 SemaphoreHandle_t mutexCurrentVector = NULL;
@@ -50,8 +50,8 @@ void ActuatorControl(void *par);
 
 void setup() {
   Serial.begin(115200); // Initialize serial monitor
-  while (!Serial) {
-  }
+  while (!Serial) {}
+  digitalWrite(LED_BUILTIN, LOW);
   // Queues
   xQueueSensorData = xQueueCreate(1, sizeof(SensorData));
   xQueueMagnetorquerScalarData =
