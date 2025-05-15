@@ -32,15 +32,16 @@ static const BaseType_t app_cpu = 1;
 #define K_I 0.0
 #define K_D 1.0
 
+// SensorRead Loop
+const uint8_t SENSORREAD_PERIODE = (CONTROL_PERIODE*0.5)*1000; // milisecond
+
 // LDR
 #define LDR_PIN_F 4    // LDR GPIO pin number
 #define LDR_PIN_L 1    // LDR GPIO pin number
 #define LDR_PIN_R 2    // LDR GPIO pin number
 #define LDR_PIN_B 0    // LDR GPIO pin number
-#define LDR_SAMPLES 50 // samples the ldr takes
-#define LDR_PERIODE                                                            \
-  (CONTROL_PERIODE * 1000) * 0.8 /                                             \
-      50 // The time the ldr can take in millisecond
+#define LDR_SAMPLES 30 // samples the ldr takes
+const uint8_t LDR_PERIODE = 5;  //(SENSORREAD_PERIODE * 1000) * 0.8 / LDR_SAMPLES // The MAX time the ldr can take in millisecond
 
 // MAG
 #define MAG1_EN 21  //

@@ -73,7 +73,7 @@ void setup() {
   // Tasks
   xTaskCreatePinnedToCore(SensorRead,   // Function to call
                           "SensorRead", // Name of the task
-                          2024,         // Stack size in bytes
+                          1024,         // Stack size in bytes
                           NULL,         // Task input parameter
                           1,    // Task priority (0 to configMAX_PRIORITIES - 1)
                           NULL, // Task handle
@@ -485,6 +485,9 @@ void SensorRead(void *par) {
                      .gyro_sat = gyro_data.vector,
                      .accl_sat = accl_data.vector};
   
+  TickType_t xLastWakeTime = 0;
+  xLastWakeTime = xTaskGetTickCount(); // Get the current tick count
+
   // Task loop
 #if defined(DEBUG_CONTROL)
   while (1) {
@@ -526,6 +529,8 @@ void SensorRead(void *par) {
     data.gyro_sat = gyro_data.vector;
     data.accl_sat = accl_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
+
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SENSORREAD_PERIODE)); // Delay should be
   }
 #endif
 }
