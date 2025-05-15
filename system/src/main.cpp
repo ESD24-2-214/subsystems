@@ -49,9 +49,20 @@ void SensorRead(void *par);
 void ActuatorControl(void *par);
 
 void setup() {
+#ifdef TEST // Release mode the Serial TX pin is used for the magnetorquer MAG1_EN
   Serial.begin(115200); // Initialize serial monitor
   while (!Serial) {}
-  digitalWrite(LED_BUILTIN, LOW);
+#else
+  pinMode(MAG1_EN, OUTPUT);
+  pinMode(MAG2_EN, OUTPUT);
+  pinMode(MAG1_CW, OUTPUT);
+  pinMode(MAG1_CCW, OUTPUT);
+  pinMode(MAG2_CW, OUTPUT);
+  pinMode(MAG2_CCW, OUTPUT);
+#endif
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
   // Queues
   xQueueSensorData = xQueueCreate(1, sizeof(SensorData));
   xQueueMagnetorquerScalarData =
@@ -199,7 +210,7 @@ void control_loop(void *pvParameters) {
                "\tSun Vector { %.2ee1, %.2ee2, %.2ee3 } \n\n\0",
                sensor_data.sun_sat.e1, sensor_data.sun_sat.e2,
                sensor_data.sun_sat.e3);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         // Write got data to serial
         Serial.print("Resived Sensor Vector: ");
         Serial.println(i);
@@ -220,7 +231,7 @@ void control_loop(void *pvParameters) {
                "\tSun Vector { %.2ee1, %.2ee2, %.2ee3 } \n\n\0",
                sensor_data.sun_sat.e1, sensor_data.sun_sat.e2,
                sensor_data.sun_sat.e3);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         // Write running with old data
         Serial.print("Resived Sensor Vector: ");
         Serial.println(i);
@@ -249,7 +260,7 @@ void control_loop(void *pvParameters) {
                           &magnetorquer_scalars) == pdPASS) {
         snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i \n\0",
                  magnetorquer_scalars.time_stamp_msec);
-        if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
           Serial.println("One of the sensor vectors is the zero vector");
           Serial.print("Send Scalar to Actuator Controller: ");
           Serial.println(i);
@@ -277,7 +288,7 @@ void control_loop(void *pvParameters) {
                "\tMag Bivector { %.2ee12, %.2ee31, %.2ee23 }: %i \n\n\0",
                magnetric_flux_density_sat.e12, magnetric_flux_density_sat.e31,
                magnetric_flux_density_sat.e23, i);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         Serial.print(buffer0);
         xSemaphoreGive(mutexSerial);
       }
@@ -300,7 +311,7 @@ void control_loop(void *pvParameters) {
                cob_vec_from_world_to_sat.m21, cob_vec_from_world_to_sat.m22,
                cob_vec_from_world_to_sat.m23, cob_vec_from_world_to_sat.m31,
                cob_vec_from_world_to_sat.m32, cob_vec_from_world_to_sat.m33, i);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         Serial.print(buffer0);
         Serial.print(buffer1);
         xSemaphoreGive(mutexSerial);
@@ -321,7 +332,7 @@ void control_loop(void *pvParameters) {
                "\t  %.2e, %.2e, %.2e }: %i\n\n",
                inertia_world.m21, inertia_world.m22, inertia_world.m23,
                inertia_world.m31, inertia_world.m32, inertia_world.m33, i);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         Serial.print(buffer0);
         Serial.print(buffer1);
         xSemaphoreGive(mutexSerial);
@@ -345,7 +356,7 @@ void control_loop(void *pvParameters) {
                "Current WORLD Vector "
                "{ %.2e, %.2e, %.2e }: %i\n\n",
                current_world.e1, current_world.e2, current_world.e3, i);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         Serial.print(buffer0);
         Serial.print(buffer1);
         xSemaphoreGive(mutexSerial);
@@ -377,7 +388,7 @@ void control_loop(void *pvParameters) {
                "{ %.2e, %.2e, %.2e }: %i\n\n",
                angle_err_world.e12, angle_err_world.e31, angle_err_world.e23,
                i);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         Serial.print(buffer0);
         xSemaphoreGive(mutexSerial);
       }
@@ -392,7 +403,7 @@ void control_loop(void *pvParameters) {
                "PID Res WORLD Bivector "
                "{ %.2e, %.2e, %.2e }: %i\n\n",
                pid_res_world.e12, pid_res_world.e31, pid_res_world.e23, i);
-      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
         Serial.print(buffer0);
         xSemaphoreGive(mutexSerial);
       }
@@ -415,7 +426,7 @@ void control_loop(void *pvParameters) {
                           &magnetorquer_scalars) == pdPASS) {
         snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i \n\0",
                  magnetorquer_scalars.time_stamp_msec);
-        if (xSemaphoreTake(mutexSerial, 10) == pdTRUE) {
+        if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
           Serial.print("Send Scalar to Actuator Controller: ");
           Serial.println(i);
           Serial.print(buffer0);
@@ -449,7 +460,10 @@ void control_loop(void *pvParameters) {
 void SensorRead(void *par) {
   xSemaphoreTake(binarykey1, portMAX_DELAY);
   if (MPU_I2C.begin(SDA, SCL, ClockSpeed) == false) {
-    Serial.println("I2C begin Failed!");
+    if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL && Serial) {
+      Serial.println("I2C begin Failed!");
+      xSemaphoreGive(mutexSerial);
+    }
   }
   // Define param of task
   const mag_resolution mag_res = BIT_16;          // mag resolution
@@ -530,7 +544,7 @@ void SensorRead(void *par) {
     data.accl_sat = accl_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
 
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SENSORREAD_PERIODE)); // Delay should be
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SENSORREAD_PERIODE)); // Delay
   }
 #endif
 }
@@ -545,27 +559,25 @@ void ActuatorControl(void *par) {
   analogWriteFrequency((uint32_t)(PWM_FREQ));
   while (1) {
     if (xQueueReceive(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
-        pdPASS) {
-      if(!(mutexSerial == NULL)) {
-        if (xSemaphoreTake(mutexSerial, 100) == pdTRUE) {
-          Serial.println("Received the following data: ");
-          Serial.print("\tTimeStamp(msec): ");
-          Serial.println(receivedScalarData.time_stamp_msec);
-          Serial.print("\te12: ");
-          Serial.println(receivedScalarData.scalar_for_e12, 6);
-          Serial.print("\te31: ");
-          Serial.println(receivedScalarData.scalar_for_e31, 6);
-          Serial.print("\te23: ");
-          Serial.println(receivedScalarData.scalar_for_e23, 6);
+      pdPASS) {
+      if (xSemaphoreTake(mutexSerial, 100) == pdTRUE && mutexSerial != NULL && Serial) {
+        Serial.println("Received the following data: ");
+        Serial.print("\tTimeStamp(msec): ");
+        Serial.println(receivedScalarData.time_stamp_msec);
+        Serial.print("\te12: ");
+        Serial.println(receivedScalarData.scalar_for_e12, 6);
+        Serial.print("\te31: ");
+        Serial.println(receivedScalarData.scalar_for_e31, 6);
+        Serial.print("\te23: ");
+        Serial.println(receivedScalarData.scalar_for_e23, 6);
 
-          xSemaphoreGive(mutexSerial);
-        }
+        xSemaphoreGive(mutexSerial);
       }
     }
 
     if (xSemaphoreTake(binarykey1, pdMS_TO_TICKS(1)) == pdTRUE){ // Check for signal from SensorRead
           enable_mag(false); // Turn off Magnotorqer
-          vTaskDelay(pdMS_TO_TICKS(1)); // Wait for magnototorer too power down
+          vTaskDelay(pdMS_TO_TICKS(MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
         xSemaphoreGive(binarykey1); // signal to SensorRead to measure magneticfield
         xSemaphoreGive(binarykey2); // give back the first key
           xSemaphoreTake(binarykey3, portMAX_DELAY); // wait for SensorRead to be done
@@ -573,8 +585,15 @@ void ActuatorControl(void *par) {
           xSemaphoreGive(binarykey3);
         xSemaphoreTake(binarykey2, portMAX_DELAY);
     }
-    pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
-    pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
+    // Set the PWM signal to the H-Bridge
+    // pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
+    // pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
+    // pulse_mag(0, MAG2_CW, MAG2_CCW);
+    // pulse_mag(1, MAG1_CW, MAG2_CCW);
+    digitalWrite(MAG1_CW, HIGH);
+    digitalWrite(MAG1_CCW, LOW);
+    digitalWrite(MAG2_CW, HIGH);
+    digitalWrite(MAG2_CCW, LOW);
   }
 }
 

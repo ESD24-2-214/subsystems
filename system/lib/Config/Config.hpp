@@ -45,11 +45,12 @@ const uint8_t LDR_PERIODE = 5;  //(SENSORREAD_PERIODE * 1000) * 0.8 / LDR_SAMPLE
 
 // MAG
 #define MAG1_EN 21  //
-#define MAG2_EN 10  //
+#define MAG2_EN 3  //
 #define MAG1_CW 19  //
 #define MAG1_CCW 18 //
 #define MAG2_CW 20  //
-#define MAG2_CCW 3  //
+#define MAG2_CCW 10  //
+#define MAG_POWER_DOWN_TIME_MS 2 // Time in ms to power down the magnetorquer
 
 // LED
 #define LED1 5 //
