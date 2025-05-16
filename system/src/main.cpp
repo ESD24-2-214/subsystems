@@ -55,10 +55,10 @@ void setup() {
 #else
   pinMode(MAG1_EN, OUTPUT);
   pinMode(MAG2_EN, OUTPUT);
-  pinMode(MAG1_CW, OUTPUT);
-  pinMode(MAG1_CCW, OUTPUT);
-  pinMode(MAG2_CW, OUTPUT);
-  pinMode(MAG2_CCW, OUTPUT);
+  // pinMode(MAG1_CW, OUTPUT);
+  // pinMode(MAG1_CCW, OUTPUT);
+  // pinMode(MAG2_CW, OUTPUT);
+  // pinMode(MAG2_CCW, OUTPUT);
 #endif
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -576,7 +576,7 @@ void ActuatorControl(void *par) {
     }
 
     if (xSemaphoreTake(binarykey1, pdMS_TO_TICKS(1)) == pdTRUE){ // Check for signal from SensorRead
-          enable_mag(false); // Turn off Magnotorqer
+          //enable_mag(false); // Turn off Magnotorqer
           vTaskDelay(pdMS_TO_TICKS(MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
         xSemaphoreGive(binarykey1); // signal to SensorRead to measure magneticfield
         xSemaphoreGive(binarykey2); // give back the first key
@@ -586,14 +586,14 @@ void ActuatorControl(void *par) {
         xSemaphoreTake(binarykey2, portMAX_DELAY);
     }
     // Set the PWM signal to the H-Bridge
-    // pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
-    // pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
+    pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
+    pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
     // pulse_mag(0, MAG2_CW, MAG2_CCW);
     // pulse_mag(1, MAG1_CW, MAG2_CCW);
-    digitalWrite(MAG1_CW, HIGH);
-    digitalWrite(MAG1_CCW, LOW);
-    digitalWrite(MAG2_CW, HIGH);
-    digitalWrite(MAG2_CCW, LOW);
+    // digitalWrite(MAG1_CW, HIGH);
+    // digitalWrite(MAG1_CCW, LOW);
+    // digitalWrite(MAG2_CW, HIGH);
+    // digitalWrite(MAG2_CCW, LOW);
   }
 }
 
