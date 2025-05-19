@@ -1,0 +1,15 @@
+*.log
+tmp/
+control
+
+.direnv
+*.out
+
+# plots
+*.csv
+*.pdf
+*.png
+
+.cache
+.projectile
+compile_commands.json
