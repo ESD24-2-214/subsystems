@@ -32,7 +32,7 @@ static const BaseType_t app_cpu = 1;
 #define CONTROL_PERIODE 0.5 // second
 #define K_P 0.4
 #define K_I 0.0
-#define K_D 1.0
+#define K_D 1.1
 
 // SensorRead Loop
 const uint8_t SENSORREAD_PERIODE = (CONTROL_PERIODE * 0.5) * 1000; // milisecond

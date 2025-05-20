@@ -6,6 +6,7 @@ tmp/
 *.bin
 *.csv
 *.pdf
+*.txt
 
 .cache
 .projectile

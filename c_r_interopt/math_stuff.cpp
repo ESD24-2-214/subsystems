@@ -41,7 +41,7 @@ Matrix3x3 matrix_inv(Matrix3x3 matrix) {
   FNPRINT("Determinate: %.9g\n", (double)determinate);
 #endif
 
-  if (determinate >= 0.0000000000000f && determinate <= 0.00000000000001f) {
+  if (determinate >= -0.1e-9f && determinate <= 0.1e-9f) {
     exit(1);
   }
   float scalar = 1 / determinate;
@@ -378,20 +378,21 @@ Bivector angle_difference_bivector(Vector a, Vector b) {
   FNPRINT("inner norm: %f\n", (double)inner_norm);
 #endif
 
-  // if (inner_product > 0.90000000f) { // parallel
-  if (inner_norm >= 1.0f && inner_norm <= 1.0000001f) { // parallel
+  // if (inner_norm >= 1.0f && inner_norm <= (1.0001f)) { // parallel
+  if (inner_norm >= 1.0f && inner_norm <= (1.0f + 1e-6f)) { // parallel
 #ifdef DEBUG
     FNPRINT("parallel path\n");
 #endif
 
     return Bivector{0.0, 0.0, 0.0};
-  } else if (inner_norm >= -1.01f && inner_norm <= -1.00f) { // anti
-                                                             // parallel
+    // } else if (inner_norm >= (-1.0001f) && inner_norm <= -1.0f) { // anti
+  } else if (inner_norm >= (-1.0f - 1.0e-6f) && inner_norm <= -1.0f) { //
+    // anti parallel
 #ifdef DEBUG
     FNPRINT("anti parallel path\n");
 #endif
 
-    return Bivector{3.14159274f, 0.0, 0.0};
+    return Bivector{((float)TAU) / 2.0f, 0.0f, 0.0f};
   } else { // everything else
 #ifdef DEBUG
     FNPRINT("general path\n");
@@ -461,7 +462,8 @@ Rotor rotor_form_halv_angle_bivector(Bivector half_angle) {
                                     (half_angle.e31 * half_angle.e31) +
                                     (half_angle.e23 * half_angle.e23));
 
-  if (rot_half_angle_norm == 0.0f) {
+  // if (rot_half_angle_norm == 0.0f) {
+  if (rot_half_angle_norm > -0.1e-6f && rot_half_angle_norm < 0.1e-6f) {
     // There is no plane
     // cos(0.0) = 1.0
     // sin(0.0) = 0.0
