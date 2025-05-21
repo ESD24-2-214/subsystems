@@ -1,0 +1,12 @@
+.pio/
+.clang_complete/
+.ccls
+.ccls-root
+.cache/
+.direnv/
+compile_commands.json
+
+
+# editors
+.vscode/
+.projectile
