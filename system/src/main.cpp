@@ -49,8 +49,10 @@ void SensorRead(void *par);
 void ActuatorControl(void *par);
 
 void setup() {
-#ifdef TEST // Release mode the Serial TX pin is used for the magnetorquer
-            // MAG1_EN
+#if defined(TEST) // Release mode the Serial TX pin is
+                  // used for the magnetorquer
+                  // MAG1_EN
+
   Serial.begin(115200); // Initialize serial monitor
   while (!Serial) {
   }
@@ -147,7 +149,7 @@ void control_loop(void *pvParameters) {
   Matrix3x3 inertia_world;
 
   // Magnetorquers
-  float magnetorquer_dipole = 0.1458f; // ampere meter^2
+  float magnetorquer_dipole = 0.1318f; // ampere meter^2
   MagnetorquerScalarData magnetorquer_scalars;
   Bivector mag1_sat = Bivector{
       // This does not exist
@@ -569,6 +571,14 @@ void ActuatorControl(void *par) {
   analogWriteResolution((uint8_t)(PWM_RES));
   analogWriteFrequency((uint32_t)(PWM_FREQ));
   while (1) {
+
+#if defined(DEBUG_PWM)
+    receivedScalarData.scalar_for_e31 = -0.2;
+    // receivedScalarData.scalar_for_e23 = 0.2;
+    pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
+    // pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG1_CCW);
+
+#else
     if (xQueueReceive(xQueueMagnetorquerScalarData, &receivedScalarData, 10) ==
         pdPASS) {
       if (xSemaphoreTake(mutexSerial, 100) == pdTRUE && mutexSerial != NULL &&
@@ -603,13 +613,14 @@ void ActuatorControl(void *par) {
     }
     // Set the PWM signal to the H-Bridge
     pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
-    pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG2_CCW);
-    // pulse_mag(0, MAG2_CW, MAG2_CCW);
-    // pulse_mag(1, MAG1_CW, MAG2_CCW);
-    // digitalWrite(MAG1_CW, HIGH);
-    // digitalWrite(MAG1_CCW, LOW);
-    // digitalWrite(MAG2_CW, HIGH);
-    // digitalWrite(MAG2_CCW, LOW);
+    pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG1_CCW);
+// pulse_mag(0, MAG2_CW, MAG2_CCW);
+// pulse_mag(1, MAG1_CW, MAG2_CCW);
+// digitalWrite(MAG1_CW, HIGH);
+// digitalWrite(MAG1_CCW, LOW);
+// digitalWrite(MAG2_CW, HIGH);
+// digitalWrite(MAG2_CCW, LOW);
+#endif
   }
 }
 

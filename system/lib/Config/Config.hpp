@@ -36,7 +36,7 @@ static const BaseType_t app_cpu = 1;
 #define CONTROL_PERIODE 0.5 // second
 #define K_P 0.4
 #define K_I 0.0
-#define K_D 1.1
+#define K_D 2.0
 
 // SensorRead Loop
 const uint8_t SENSORREAD_PERIODE = (CONTROL_PERIODE * 0.5) * 1000; // milisecond
@@ -64,8 +64,8 @@ const uint8_t LDR_PERIODE = 5; //(SENSORREAD_PERIODE * 1000) * 0.8 / LDR_SAMPLES
 #define LED2 6 //
 #define LED3 7 //
 
-#define PWM_RES 10       // in bits
-#define PWM_RES_MAX 1023 // 2^10
-#define PWM_FREQ 1e4     // in MHz
+#define PWM_RES 8       // in bits
+#define PWM_RES_MAX 255 // 2^10
+#define PWM_FREQ 1e4    // in Hz
 
 #endif
