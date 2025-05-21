@@ -18,10 +18,14 @@ static const BaseType_t app_cpu = 1;
 #define mag_scale_factor1 0.6  // 0.6uT/LSB
 #define mag_scale_factor2 0.15 // 0.15uT/LSB
 
+#define mag_hardiron_bias_e1 -5.500  //Calibration of the magnetometer x-axis 
+#define mag_hardiron_bias_e2 359.000 //Calibration of the magnetometer y-axis
+#define mag_hardiron_bias_e3 0.0     //Calibration of the magnetometer z-axis
+
 #define LDR_MAX 4095           // LDR max value
 #define LDR_MIN 0              // LDR min value
-#define LDR_CALIBRATION_e1 411 // to much in this direction
-#define LDR_CALIBRATION_e2 397 // to much in this direction
+#define LDR_CALIBRATION_E1 411 // to much in this direction
+#define LDR_CALIBRATION_E2 397 // to much in this direction
 
 #define ClockSpeed 400000 // I2C clockspeed: 400kHz
 

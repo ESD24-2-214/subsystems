@@ -4,7 +4,7 @@
 #include <MPU_ADDRESS.hpp>
 #include <AK8963_ADDRESS.hpp>
 #include <DEBUG.hpp>
-
+#include <Config.hpp>
 
 MasterI2C MPU_I2C = MasterI2C(0); // I2C object
 
@@ -184,9 +184,9 @@ void read_magnetometer(Vector *mag_data)
     ERROR_LOG("Magnetic sensor overflow", " ");  
     return; // If invalid we keep the last data
   }
-  mag_data -> e1 = (int16_t)(data[1] << 8 | data[0]);
-  mag_data -> e2 = (int16_t)(data[3] << 8 | data[2]);
-  mag_data -> e3 = (int16_t)(data[5] << 8 | data[4]);
+  mag_data -> e1 = ((int16_t)(data[1] << 8 | data[0])) + mag_hardiron_bias_e1;
+  mag_data -> e2 = ((int16_t)(data[3] << 8 | data[2])) + mag_hardiron_bias_e2;
+  mag_data -> e3 = ((int16_t)(data[5] << 8 | data[4])) + mag_hardiron_bias_e3;
 }
 
 /* @brief This function is used to read the data from the sensor and scale it
