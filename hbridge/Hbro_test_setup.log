@@ -1,0 +1,15 @@
+LTspice 24.0.12 for Windows
+Circuit: * C:\Users\MSB02\GitProjects\subsystems\hbridge\Hbro_test_setup.asc
+Start Time: Wed May 21 12:22:00 2025
+solver = Normal
+Maximum thread count: 20
+tnom = 27
+temp = 27
+method = modified trap
+Limiting rise time of source v1 to 5e-07
+Limiting fall time of source v1 to 5e-07
+Limiting rise time of source v3 to 1.9984e-16
+Limiting fall time of source v3 to 1.9984e-16
+Direct Newton iteration for .op point succeeded.
+Total elapsed time: 0.403 seconds.
+

@@ -36,6 +36,11 @@ TaskHandle_t *SensorRead_th;
 void setup() {
   Serial.begin(115200); // Initialize serial monitor
   while (!Serial) {}
+  delay(2000); // Wait for serial monitor to open
+
+  
+
+
   // Queues
   xQueueSensorData = xQueueCreate(1, sizeof(SensorData));
   xQueueMagnetorquerScalarData =
@@ -45,7 +50,7 @@ void setup() {
   // Create tasks
   xTaskCreatePinnedToCore(SensorRead,   // Function to call
                           "SensorRead", // Name of the task
-                          2024,         // Stack size in bytes
+                          1024,         // Stack size in bytes
                           NULL,         // Task input parameter
                           1,    // Task priority (0 to configMAX_PRIORITIES - 1)
                           SensorRead_th, // Task handle
@@ -93,6 +98,8 @@ void SensorRead(void *par) {
   
   // Task loop
   while (1) {
+    Serial.print("Start time: ");
+    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
     read_data(&gyro_data);
     read_data(&accl_data);
     
@@ -115,9 +122,6 @@ void SensorRead(void *par) {
     data.gyro_sat = gyro_data.vector;
     data.accl_sat = accl_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
-
-    Serial.print("SensorData water level: ");
-    Serial.println(uxTaskGetStackHighWaterMark( SensorRead_th ));
 
   }
 }

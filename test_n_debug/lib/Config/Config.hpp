@@ -37,10 +37,9 @@ static const BaseType_t app_cpu = 1;
 #define LDR_PIN_L 1    // LDR GPIO pin number
 #define LDR_PIN_R 2    // LDR GPIO pin number
 #define LDR_PIN_B 0    // LDR GPIO pin number
-#define LDR_SAMPLES 50 // samples the ldr takes
-#define LDR_PERIODE                                                            \
-  (CONTROL_PERIODE * 1000) * 0.8 /                                             \
-      50 // The time the ldr can take in millisecond
+#define LDR_SAMPLES 30 // samples the ldr takes
+#define LDR_PERIODE 5              //(CONTROL_PERIODE * 1000) * 0.8 / LDR_SAMPLES // The time the ldr can take in millisecond                                      
+
 
 // MAG
 #define MAG1_EN 21  //

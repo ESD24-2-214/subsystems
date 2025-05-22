@@ -21,8 +21,13 @@
 #Voltage: 1 V
 #Negative Supply: OFF
 #Voltage: -1 V
+#Time: (s) 
+#Channel_1_out: (V)
+#Channel_2_light: (V)
 
-Time (s),Channel 1 out (V),Channel 2 "light" (V)
+
+
+Time,Channel_1_out,Channel_2_light
 -5.907232526114379,0.5655669623326267,-0.005450445986260739
 -5.90582871611438,0.5583000274043822,-0.005450445986260739
 -5.904424906114379,0.5583000274043789,-0.005450445986260739

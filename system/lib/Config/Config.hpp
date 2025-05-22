@@ -56,9 +56,9 @@ const uint8_t LDR_PERIODE = 5;  //(SENSORREAD_PERIODE * 1000) * 0.8 / LDR_SAMPLE
 #define LED1 5 //
 #define LED2 6 //
 #define LED3 7 //
-
-#define PWM_RES 10       // in bits
-#define PWM_RES_MAX 1023 // 2^10
-#define PWM_FREQ 1e4     // in MHz
+// PWM values
+#define PWM_RES 10       // in bits 2^n: n = 10
+#define PWM_RES_MAX 1023 // 2^n - 1: n = 10
+#define PWM_FREQ 1e4     // in Hz
 
 #endif
