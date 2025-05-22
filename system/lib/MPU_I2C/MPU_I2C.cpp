@@ -184,9 +184,9 @@ void read_magnetometer(Vector *mag_data)
     ERROR_LOG("Magnetic sensor overflow", " ");  
     return; // If invalid we keep the last data
   }
-  mag_data -> e1 = ((int16_t)(data[1] << 8 | data[0])) + mag_hardiron_bias_e1;
-  mag_data -> e2 = ((int16_t)(data[3] << 8 | data[2])) + mag_hardiron_bias_e2;
-  mag_data -> e3 = ((int16_t)(data[5] << 8 | data[4])) + mag_hardiron_bias_e3;
+  mag_data -> e1 = ((int16_t)(data[1] << 8 | data[0])) - mag_hardiron_bias_e1;
+  mag_data -> e2 = ((int16_t)(data[3] << 8 | data[2])) - mag_hardiron_bias_e2;
+  mag_data -> e3 = ((int16_t)(data[5] << 8 | data[4])) - mag_hardiron_bias_e3;
 }
 
 /* @brief This function is used to read the data from the sensor and scale it
@@ -211,19 +211,20 @@ int8_t read_data(SensorVector *Vec){
   switch (Vec -> sensor)
   {
   case MAGNOTOMETER:
-    read_magnetometer(&Vec -> vector);
+    read_magnetometer_single16(&Vec -> vector);
+    //scale(&Vec -> vector, Vec -> scale_factor);
     break;
   case ACCELEROMETER:
     read_accelerometer(&Vec -> vector);
+    scale(&Vec -> vector, Vec -> scale_factor);
     break;
   case GYROSCOPE:
     read_gryroscope(&Vec -> vector);
+    scale(&Vec -> vector, Vec -> scale_factor);
     break;
   default:
     break;
   }
-
-  scale(&Vec -> vector, Vec -> scale_factor);
 
   return 0;
 }
@@ -518,4 +519,32 @@ void mpu_debug_print(void){
   PRINT_DEBUG("\nGYRO_CONFIG : ");
   PRINT_DEBUG((data_byte, BIN));
   PRINT_DEBUG("\n");
+}
+
+/* @brief This function is used to read the magnetometer data in single measurement mode
+** @param mag_data: Must be Vector struct
+** @note If the magnetic sensor overflow the data is invalid and we keep the last data
+*/
+void read_magnetometer_single16(Vector *mag_data)
+{
+  uint8_t stat = 0;
+  uint8_t data[6] = {0};
+  read(AK8963_ADDRESS, ST2, &stat, 1);   // Read ST2 register to clear the data
+  write(AK8963_ADDRESS, CNTL1, 0b00010001); // Set to single measurement mode 16 bit
+  vTaskDelay(pdMS_TO_TICKS(7.2)); // Wait for 7.2ms to make sure the data is ready
+  do
+  {
+    read(AK8963_ADDRESS, ST1, &stat, 1); // Read ST1 to cheak bit 0 for the data bit ready
+  } while (!(stat & 0b01)); // May be agresive use of CPU time but we use two cores Max wait 9ms typ 7.2ms
+
+  read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
+  read(AK8963_ADDRESS, ST2, &stat, 1); // Read ST2 register to clear the data ready bit
+  if (stat & 0b00001000) // Check for magnetic sensor overflow i.e. the data is invalid
+  {
+    ERROR_LOG("Magnetic sensor overflow", " ");  
+    return; // If invalid we keep the last data
+  }
+  mag_data -> e1 = (float)((int16_t)data[1] << 8 | (int16_t)data[0]);
+  mag_data -> e2 = (float)((int16_t)data[3] << 8 | (int16_t)data[2]);
+  mag_data -> e3 = (float)((int16_t)data[5] << 8 | (int16_t)data[4]);
 }

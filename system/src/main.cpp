@@ -87,7 +87,7 @@ void setup() {
   // Tasks
   xTaskCreatePinnedToCore(SensorRead,   // Function to call
                           "SensorRead", // Name of the task
-                          1024,         // Stack size in bytes
+                          1124,         // Stack size in bytes
                           NULL,         // Task input parameter
                           1,    // Task priority (0 to configMAX_PRIORITIES - 1)
                           NULL, // Task handle
@@ -173,7 +173,7 @@ void control_loop(void *pvParameters) {
 
   Bivector magnetric_flux_density_sat;
 
-  // The change of basis matrices
+  // The change of basis matrices (cob)
   Matrix3x3 cob_vec_from_world_to_sat;
   Matrix3x3 cob_vec_from_sat_to_world;
   Matrix3x3 cob_bivec_from_world_to_sat;
@@ -473,7 +473,7 @@ void control_loop(void *pvParameters) {
 void SensorRead(void *par) {
   xSemaphoreTake(binarykey1, portMAX_DELAY);
   if (MPU_I2C.begin(SDA, SCL, ClockSpeed) == false) {
-    if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
+    if (xSemaphoreTake(mutexSerial, pdMS_TO_TICKS(5000)) == pdTRUE && mutexSerial != NULL &&
         Serial) {
       Serial.println("I2C begin Failed!");
       xSemaphoreGive(mutexSerial);
@@ -481,7 +481,7 @@ void SensorRead(void *par) {
   }
   // Define param of task
   const mag_resolution mag_res = BIT_16;          // mag resolution
-  const mag_meas_mode mag_mode = MEAS_MODE1;      // mag mode
+  const mag_meas_mode mag_mode = POWER_DOWN;      // mag mode
   const gyro_full_scale_range gyro_fs = GFS_500;  // gyro full scale range
   const acc_full_scale_range accel_fs = AFS_2G;   // accel full scale range
   const double gyro_scale = gyro_scale_factor500; // gyro scale factor
@@ -491,12 +491,12 @@ void SensorRead(void *par) {
   SensorVector accl_data = {unknown, 0, 0, 0, 0};
   SensorVector mag_data = {unknown, 0, 0, 0, 0};
   Vector sun_data = {0, 0, 0}; // LDR data structure
+
   // Config thing
   bypass_to_magnometer(true);
   if (MPU_I2Cbus_SCCAN()) {
     // ERROR
   }
-
   mag_resolution_config(mag_res);
   mag_meas_config(mag_mode);
   gyro_fs_sel(gyro_fs);
@@ -547,8 +547,14 @@ void SensorRead(void *par) {
     xSemaphoreGive(binarykey2);                // return key
     xSemaphoreTake(binarykey1, portMAX_DELAY); // Retrive key
     xSemaphoreGive(binarykey3);
-
+    
     sun_read_data(&sun_data, LDR_PERIODE, LDR_SAMPLES);
+
+    // scaling and calibrating the mag_data after to speed up the reading time
+    scale(&mag_data.vector, mag_data.scale_factor); 
+    mag_data.vector.e1 = mag_data.vector.e1 - mag_hardiron_bias_e1;
+    mag_data.vector.e2 = mag_data.vector.e2 - mag_hardiron_bias_e2;
+    mag_data.vector.e3 = mag_data.vector.e3 - mag_hardiron_bias_e3;
 
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = sun_data;

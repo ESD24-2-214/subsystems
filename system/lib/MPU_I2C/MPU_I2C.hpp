@@ -117,6 +117,7 @@ void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte);
 void read_gryroscope(Vector *gyro_data);
 void read_accelerometer(Vector *acc_data);
 void read_magnetometer(Vector *mag_data);
+void read_magnetometer_single16(Vector *mag_data);
 void scale(Vector *Vec, double scale_factor);
 int8_t factorScale(SensorVector *Vec);
 int8_t read_data(SensorVector *Vec);
