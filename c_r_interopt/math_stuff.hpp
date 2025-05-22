@@ -1,5 +1,6 @@
 #ifndef MATH_STUFF_H_
 #define MATH_STUFF_H_
+#define TAU 6.28318530717958647692528676655900577
 
 // Structs
 typedef struct Vector {

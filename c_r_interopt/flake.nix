@@ -37,11 +37,7 @@
               vcpkg-tool
 
               (rWrapper.override {
-                packages = with rPackages;
-                  [
-                    tidyverse
-
-                  ];
+                packages = with rPackages; [ tidyverse gridExtra cowplot ];
               })
 
             ] ++ (if system == "aarch64-darwin" then [ ] else [ gdb ]);

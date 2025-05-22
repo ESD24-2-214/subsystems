@@ -1,6 +1,12 @@
 #include "loop.hpp"
+#include "iostream"
 #include "math_stuff.hpp"
 #include <cmath>
+
+// Macros
+#define FNPRINT(...)                                                           \
+  printf("  ");                                                                \
+  printf(__VA_ARGS__)
 
 void measure(Bivector sensor_rotation_angle_sat, Vector &sun_sensor_sat,
              Vector &mag_sensor_sat) {

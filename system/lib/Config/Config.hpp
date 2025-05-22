@@ -18,8 +18,14 @@ static const BaseType_t app_cpu = 1;
 #define mag_scale_factor1 0.6  // 0.6uT/LSB
 #define mag_scale_factor2 0.15 // 0.15uT/LSB
 
-#define LDR_MAX 4095 // LDR max value
-#define LDR_MIN 0    // LDR min value
+#define mag_hardiron_bias_e1 -5.500  //Calibration of the magnetometer x-axis 
+#define mag_hardiron_bias_e2 359.000 //Calibration of the magnetometer y-axis
+#define mag_hardiron_bias_e3 0.0     //Calibration of the magnetometer z-axis
+
+#define LDR_MAX 4095           // LDR max value
+#define LDR_MIN 0              // LDR min value
+#define LDR_CALIBRATION_E1 411 // to much in this direction
+#define LDR_CALIBRATION_E2 397 // to much in this direction
 
 #define ClockSpeed 400000 // I2C clockspeed: 400kHz
 
@@ -30,35 +36,36 @@ static const BaseType_t app_cpu = 1;
 #define CONTROL_PERIODE 0.5 // second
 #define K_P 0.4
 #define K_I 0.0
-#define K_D 1.0
+#define K_D 2.0
 
 // SensorRead Loop
-const uint8_t SENSORREAD_PERIODE = (CONTROL_PERIODE*0.5)*1000; // milisecond
+const uint8_t SENSORREAD_PERIODE = (CONTROL_PERIODE * 0.5) * 1000; // milisecond
 
 // LDR
-#define LDR_PIN_F 4    // LDR GPIO pin number
-#define LDR_PIN_L 1    // LDR GPIO pin number
-#define LDR_PIN_R 2    // LDR GPIO pin number
-#define LDR_PIN_B 0    // LDR GPIO pin number
-#define LDR_SAMPLES 30 // samples the ldr takes
-const uint8_t LDR_PERIODE = 5;  //(SENSORREAD_PERIODE * 1000) * 0.8 / LDR_SAMPLES // The MAX time the ldr can take in millisecond
+#define LDR_PIN_F 4            // LDR GPIO pin number
+#define LDR_PIN_L 1            // LDR GPIO pin number
+#define LDR_PIN_R 2            // LDR GPIO pin number
+#define LDR_PIN_B 0            // LDR GPIO pin number
+#define LDR_SAMPLES 30         // samples the ldr takes
+const uint8_t LDR_PERIODE = 5; //(SENSORREAD_PERIODE * 1000) * 0.8 / LDR_SAMPLES
+                               //// The MAX time the ldr can take in millisecond
 
 // MAG
-#define MAG1_EN 21  //
-#define MAG2_EN 3  //
-#define MAG1_CW 19  //
-#define MAG1_CCW 18 //
-#define MAG2_CW 20  //
-#define MAG2_CCW 10  //
+#define MAG1_EN 21               //
+#define MAG2_EN 3                //
+#define MAG1_CW 19               //
+#define MAG1_CCW 18              //
+#define MAG2_CW 20               //
+#define MAG2_CCW 10              //
 #define MAG_POWER_DOWN_TIME_MS 2 // Time in ms to power down the magnetorquer
 
 // LED
 #define LED1 5 //
 #define LED2 6 //
 #define LED3 7 //
-// PWM values
-#define PWM_RES 10       // in bits 2^n: n = 10
-#define PWM_RES_MAX 1023 // 2^n - 1: n = 10
-#define PWM_FREQ 1e4     // in Hz
+
+#define PWM_RES 8       // in bits 2^n: n = 10
+#define PWM_RES_MAX 255 // 2^n - 1: n = 10
+#define PWM_FREQ 1e4    // in Hz
 
 #endif
