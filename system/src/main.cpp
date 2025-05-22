@@ -620,12 +620,6 @@ void ActuatorControl(void *par) {
     // Set the PWM signal to the H-Bridge
     pulse_mag(receivedScalarData.scalar_for_e31, MAG2_CW, MAG2_CCW);
     pulse_mag(receivedScalarData.scalar_for_e23, MAG1_CW, MAG1_CCW);
-// pulse_mag(0, MAG2_CW, MAG2_CCW);
-// pulse_mag(1, MAG1_CW, MAG2_CCW);
-// digitalWrite(MAG1_CW, HIGH);
-// digitalWrite(MAG1_CCW, LOW);
-// digitalWrite(MAG2_CW, HIGH);
-// digitalWrite(MAG2_CCW, LOW);
 #endif
   }
 }
