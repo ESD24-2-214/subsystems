@@ -184,9 +184,9 @@ void read_magnetometer(Vector *mag_data)
     ERROR_LOG("Magnetic sensor overflow", " ");  
     return; // If invalid we keep the last data
   }
-  mag_data -> e1 = ((int16_t)(data[1] << 8 | data[0])) - mag_hardiron_bias_e1;
-  mag_data -> e2 = ((int16_t)(data[3] << 8 | data[2])) - mag_hardiron_bias_e2;
-  mag_data -> e3 = ((int16_t)(data[5] << 8 | data[4])) - mag_hardiron_bias_e3;
+  mag_data -> e1 = ((int16_t)(data[1] << 8 | data[0]));
+  mag_data -> e2 = ((int16_t)(data[3] << 8 | data[2]));
+  mag_data -> e3 = ((int16_t)(data[5] << 8 | data[4]));
 }
 
 /* @brief This function is used to read the data from the sensor and scale it
@@ -211,7 +211,7 @@ int8_t read_data(SensorVector *Vec){
   switch (Vec -> sensor)
   {
   case MAGNOTOMETER:
-    read_magnetometer_single16(&Vec -> vector);
+    read_magnetometer(&Vec -> vector);
     //scale(&Vec -> vector, Vec -> scale_factor);
     break;
   case ACCELEROMETER:
@@ -303,7 +303,7 @@ void magnotometer_softreset(void){
 * @param Vec: the vector to scale
 * @param scale_factor: the factor to scale the vector by
 */
-void scale(Vector *Vec, double scale_factor){
+void scale(Vector *Vec, float scale_factor){
   Vec -> e1 = ((Vec -> e1) * scale_factor);
   Vec -> e2 = ((Vec -> e2) * scale_factor);
   Vec -> e3 = ((Vec -> e3) * scale_factor);
@@ -351,7 +351,7 @@ int8_t factorScale(SensorVector *Vec){
 ** @param scale_factor: the scale factor to set
 ** @note return: 0 if success, -1 if NULL pointer passed, 1 if sensor is unknown, 2 if scale factor is unknown 
 */
-int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor){
+int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, float scale_factor){
   if(Vec == NULL){
     ERROR_LOG("NULL pointer passed to initSensorVector", " ");
     return -1;
@@ -544,7 +544,7 @@ void read_magnetometer_single16(Vector *mag_data)
     ERROR_LOG("Magnetic sensor overflow", " ");  
     return; // If invalid we keep the last data
   }
-  mag_data -> e1 = (float)((int16_t)data[1] << 8 | (int16_t)data[0]);
-  mag_data -> e2 = (float)((int16_t)data[3] << 8 | (int16_t)data[2]);
-  mag_data -> e3 = (float)((int16_t)data[5] << 8 | (int16_t)data[4]);
+  mag_data -> e1 = ((uint16_t)(data[1] << 8 | data[0]));
+  mag_data -> e2 = ((uint16_t)(data[3] << 8 | data[2]));
+  mag_data -> e3 = ((uint16_t)(data[5] << 8 | data[4]));
 }

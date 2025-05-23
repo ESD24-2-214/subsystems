@@ -478,7 +478,7 @@ void SensorRead(void *par) {
   }
   // Define param of task
   const mag_resolution mag_res = BIT_16;          // mag resolution
-  const mag_meas_mode mag_mode = POWER_DOWN;      // mag mode
+  const mag_meas_mode mag_mode = MEAS_MODE2;      // mag mode
   const gyro_full_scale_range gyro_fs = GFS_500;  // gyro full scale range
   const acc_full_scale_range accel_fs = AFS_2G;   // accel full scale range
   const double gyro_scale = gyro_scale_factor500; // gyro scale factor
@@ -549,9 +549,9 @@ void SensorRead(void *par) {
 
     // scaling and calibrating the mag_data after to speed up the reading time
     scale(&mag_data.vector, mag_data.scale_factor); 
-    mag_data.vector.e1 = mag_data.vector.e1 - mag_hardiron_bias_e1;
-    mag_data.vector.e2 = mag_data.vector.e2 - mag_hardiron_bias_e2;
-    mag_data.vector.e3 = mag_data.vector.e3 - mag_hardiron_bias_e3;
+    mag_data.vector.e1 -= mag_hardiron_bias_e1;
+    mag_data.vector.e2 -= mag_hardiron_bias_e2;
+    mag_data.vector.e3 -= mag_hardiron_bias_e3;
 
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = sun_data;
@@ -604,11 +604,9 @@ void ActuatorControl(void *par) {
         pdTRUE) { // Check for signal from SensorRead
       // enable_mag(false); // Turn off Magnotorqer
       vTaskDelay(pdMS_TO_TICKS(MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
-      xSemaphoreGive(
-          binarykey1); // signal to SensorRead to measure magneticfield
+      xSemaphoreGive(binarykey1); // signal to SensorRead to measure magneticfield
       xSemaphoreGive(binarykey2); // give back the first key
-      xSemaphoreTake(binarykey3,
-                     portMAX_DELAY); // wait for SensorRead to be done
+      xSemaphoreTake(binarykey3, portMAX_DELAY); // wait for SensorRead to be done
       enable_mag(true);
       xSemaphoreGive(binarykey3);
       xSemaphoreTake(binarykey2, portMAX_DELAY);
