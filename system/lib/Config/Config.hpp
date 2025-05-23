@@ -35,7 +35,7 @@ static const BaseType_t app_cpu = 1;
 // Control Loop
 #define CONTROL_PERIODE 0.5 // seconds
 #define K_P 0.4
-#define K_I 0.0
+#define K_I 0.01
 #define K_D 2.0
 
 // SensorRead Loop
