@@ -18,12 +18,13 @@ struct SensorData {
   Vector gyro_sat;
   Vector accl_sat;
 };
-struct MagnetorquerScalarData {
+typedef struct {
   uint32_t time_stamp_msec;
   float scalar_for_e12;
   float scalar_for_e31;
   float scalar_for_e23;
-};
+}MagnetorquerScalarData;
+
 QueueHandle_t xQueueSensorData = NULL;
 QueueHandle_t xQueueMagnetorquerScalarData = NULL;
 
@@ -49,7 +50,7 @@ void SensorRead(void *par);
 void ActuatorControl(void *par);
 
 void setup() {
-#if defined(TEST) // Release mode the Serial TX pin is
+#ifdef SERIAL //defined(TEST) // Release mode the Serial TX pin is
                   // used for the magnetorquer
                   // MAG1_EN
 
@@ -59,10 +60,6 @@ void setup() {
 #else
   pinMode(MAG1_EN, OUTPUT);
   pinMode(MAG2_EN, OUTPUT);
-  // pinMode(MAG1_CW, OUTPUT);
-  // pinMode(MAG1_CCW, OUTPUT);
-  // pinMode(MAG2_CW, OUTPUT);
-  // pinMode(MAG2_CCW, OUTPUT);
 #endif
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -570,7 +567,7 @@ void SensorRead(void *par) {
 
 void ActuatorControl(void *par) {
   xSemaphoreTake(binarykey2, portMAX_DELAY);
-  struct MagnetorquerScalarData receivedScalarData;
+  MagnetorquerScalarData receivedScalarData;
   // Enable H-Bridges
   enable_mag(true);
   // Set PWM frequncy
@@ -606,8 +603,7 @@ void ActuatorControl(void *par) {
     if (xSemaphoreTake(binarykey1, pdMS_TO_TICKS(1)) ==
         pdTRUE) { // Check for signal from SensorRead
       // enable_mag(false); // Turn off Magnotorqer
-      vTaskDelay(pdMS_TO_TICKS(
-          MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
+      vTaskDelay(pdMS_TO_TICKS(MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
       xSemaphoreGive(
           binarykey1); // signal to SensorRead to measure magneticfield
       xSemaphoreGive(binarykey2); // give back the first key
