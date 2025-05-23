@@ -33,9 +33,9 @@ static const BaseType_t app_cpu = 1;
 #define SCL 9 // Signal Clock Line pin
 
 // Control Loop
-#define CONTROL_PERIODE 0.5 // seconds
+#define CONTROL_PERIODE 0.25 // seconds
 #define K_P 0.4
-#define K_I 0.01
+#define K_I 0.0
 #define K_D 2.0
 
 // SensorRead Loop
@@ -47,7 +47,7 @@ const uint16_t SENSORREAD_PERIODE = (CONTROL_PERIODE * 1000.); // milisecond
 #define LDR_PIN_R 2            // LDR GPIO pin number
 #define LDR_PIN_B 0            // LDR GPIO pin number
 #define LDR_SAMPLES 30         // samples the ldr takes
-const uint8_t LDR_PERIODE = 5; // LDR sample rate in ms
+const uint8_t LDR_PERIODE = 2; // LDR sample rate in ms
                                //// The MAX time the ldr can take in millisecond
 
 // MAG

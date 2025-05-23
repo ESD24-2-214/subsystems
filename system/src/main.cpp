@@ -48,7 +48,7 @@ void read_current_vector(Vector &local_current_world);
 void control_loop(void *pvParameters);
 void SensorRead(void *par);
 void ActuatorControl(void *par);
-#define DEBUG_CONTROL
+// #define DEBUG_CONTROL
 void setup() {
 #if defined(DEBUG_CONTROL) // Release mode the Serial TX pin is
                   // used for the magnetorquer
