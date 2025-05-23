@@ -18,12 +18,13 @@ struct SensorData {
   Vector gyro_sat;
   Vector accl_sat;
 };
-struct MagnetorquerScalarData {
+typedef struct {
   uint32_t time_stamp_msec;
   float scalar_for_e12;
   float scalar_for_e31;
   float scalar_for_e23;
-};
+}MagnetorquerScalarData;
+
 QueueHandle_t xQueueSensorData = NULL;
 QueueHandle_t xQueueMagnetorquerScalarData = NULL;
 
@@ -47,9 +48,9 @@ void read_current_vector(Vector &local_current_world);
 void control_loop(void *pvParameters);
 void SensorRead(void *par);
 void ActuatorControl(void *par);
-
+// #define DEBUG_CONTROL
 void setup() {
-#if defined(TEST) // Release mode the Serial TX pin is
+#if defined(DEBUG_CONTROL) // Release mode the Serial TX pin is
                   // used for the magnetorquer
                   // MAG1_EN
 
@@ -59,10 +60,6 @@ void setup() {
 #else
   pinMode(MAG1_EN, OUTPUT);
   pinMode(MAG2_EN, OUTPUT);
-  // pinMode(MAG1_CW, OUTPUT);
-  // pinMode(MAG1_CCW, OUTPUT);
-  // pinMode(MAG2_CW, OUTPUT);
-  // pinMode(MAG2_CCW, OUTPUT);
 #endif
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -206,11 +203,11 @@ void control_loop(void *pvParameters) {
       snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i\n\0",
                sensor_data.time_stamp_msec);
       snprintf(buffer1, sizeof(buffer1),
-               "\tMagno Vector { %.2ee1, %.2ee2, %.2ee3 } \n\0",
+               "\tMagno Vector { %f, %f, %f } \n\0",
                sensor_data.magno_sat.e1, sensor_data.magno_sat.e2,
                sensor_data.magno_sat.e3);
       snprintf(buffer2, sizeof(buffer2),
-               "\tSun Vector { %.2ee1, %.2ee2, %.2ee3 } \n\n\0",
+               "\tSun Vector { %f, %f, %f } \n\n\0",
                sensor_data.sun_sat.e1, sensor_data.sun_sat.e2,
                sensor_data.sun_sat.e3);
       if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
@@ -228,11 +225,11 @@ void control_loop(void *pvParameters) {
       snprintf(buffer0, sizeof(buffer0), "\tTime Stamp (msec): %i\n\0",
                sensor_data.time_stamp_msec);
       snprintf(buffer1, sizeof(buffer1),
-               "\tMagno Vector { %.2ee1, %.2ee2, %.2ee3 } \n\0",
+               "\tMagno Vector { %f, %f, %f } \n\0",
                sensor_data.magno_sat.e1, sensor_data.magno_sat.e2,
                sensor_data.magno_sat.e3);
       snprintf(buffer2, sizeof(buffer2),
-               "\tSun Vector { %.2ee1, %.2ee2, %.2ee3 } \n\n\0",
+               "\tSun Vector { %f, %f, %f } \n\n\0",
                sensor_data.sun_sat.e1, sensor_data.sun_sat.e2,
                sensor_data.sun_sat.e3);
       if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
@@ -287,7 +284,8 @@ void control_loop(void *pvParameters) {
 
       // Get magnotometer output as bivector
       magnetric_flux_density_sat =
-          dual_vector_to_bivector(sensor_data.magno_sat);
+         scale_bivector(     // scale from micro Tesla to Tesla
+      dual_vector_to_bivector(sensor_data.magno_sat),1e-6f); 
 
 #if defined(DEBUG_CONTROL)
       snprintf(buffer0, sizeof(buffer0),
@@ -359,11 +357,11 @@ void control_loop(void *pvParameters) {
 #if defined(DEBUG_CONTROL)
       snprintf(buffer0, sizeof(buffer0),
                "Reference WORLD Vector "
-               "{ %.2e, %.2e, %.2e }: %i\n",
+               "{ %f, %f, %f }: %i\n",
                reference_world.e1, reference_world.e2, reference_world.e3, i);
       snprintf(buffer1, sizeof(buffer1),
                "Current WORLD Vector "
-               "{ %.2e, %.2e, %.2e }: %i\n\n",
+               "{ %f, %f, %f }: %i\n\n",
                current_world.e1, current_world.e2, current_world.e3, i);
       if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
           Serial) {
@@ -395,7 +393,7 @@ void control_loop(void *pvParameters) {
 #if defined(DEBUG_CONTROL)
       snprintf(buffer0, sizeof(buffer0),
                "Angle Error WORLD Bivector "
-               "{ %.2e, %.2e, %.2e }: %i\n\n",
+               "{ %f, %f, %f }: %i\n\n",
                angle_err_world.e12, angle_err_world.e31, angle_err_world.e23,
                i);
       if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
@@ -412,7 +410,7 @@ void control_loop(void *pvParameters) {
 #if defined(DEBUG_CONTROL)
       snprintf(buffer0, sizeof(buffer0),
                "PID Res WORLD Bivector "
-               "{ %.2e, %.2e, %.2e }: %i\n\n",
+               "{ %f, %f, %f }: %i\n\n",
                pid_res_world.e12, pid_res_world.e31, pid_res_world.e23, i);
       if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
           Serial) {
@@ -424,12 +422,37 @@ void control_loop(void *pvParameters) {
       Bivector torque_1_world =
           matrix_bivector_mul(inertia_world, pid_res_world);
 
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "Torque 1 WORLD Bivector "
+               "{ %f, %f, %f }: %i\n\n",
+               torque_1_world.e12, torque_1_world.e31, torque_1_world.e23, i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
+          Serial) {
+        Serial.print(buffer0);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
+
+
       Bivector torque_2_world =
           actuator_test(torque_1_world, cob_bivec_from_sat_to_world,
                         magnetric_flux_density_sat, mag1_sat, mag2_sat,
                         mag3_sat, magnetorquer_scalars.scalar_for_e12,
                         magnetorquer_scalars.scalar_for_e31,
                         magnetorquer_scalars.scalar_for_e23);
+
+#if defined(DEBUG_CONTROL)
+      snprintf(buffer0, sizeof(buffer0),
+               "Torque 2 WORLD Bivector "
+               "{ %f, %f, %f }: %i\n\n",
+               torque_2_world.e12, torque_2_world.e31, torque_2_world.e23, i);
+      if (xSemaphoreTake(mutexSerial, 10) == pdTRUE && mutexSerial != NULL &&
+          Serial) {
+        Serial.print(buffer0);
+        xSemaphoreGive(mutexSerial);
+      }
+#endif
 
       // send scalars to queue
       magnetorquer_scalars.time_stamp_msec =
@@ -481,7 +504,7 @@ void SensorRead(void *par) {
   }
   // Define param of task
   const mag_resolution mag_res = BIT_16;          // mag resolution
-  const mag_meas_mode mag_mode = POWER_DOWN;      // mag mode
+  const mag_meas_mode mag_mode = MEAS_MODE2;      // mag mode
   const gyro_full_scale_range gyro_fs = GFS_500;  // gyro full scale range
   const acc_full_scale_range accel_fs = AFS_2G;   // accel full scale range
   const double gyro_scale = gyro_scale_factor500; // gyro scale factor
@@ -517,7 +540,7 @@ void SensorRead(void *par) {
   xLastWakeTime = xTaskGetTickCount(); // Get the current tick count
 
   // Task loop
-#if defined(DEBUG_CONTROL)
+#if A //defined(DEBUG_CONTROL)
   while (1) {
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = Vector{
@@ -552,9 +575,9 @@ void SensorRead(void *par) {
 
     // scaling and calibrating the mag_data after to speed up the reading time
     scale(&mag_data.vector, mag_data.scale_factor); 
-    mag_data.vector.e1 = mag_data.vector.e1 - mag_hardiron_bias_e1;
-    mag_data.vector.e2 = mag_data.vector.e2 - mag_hardiron_bias_e2;
-    mag_data.vector.e3 = mag_data.vector.e3 - mag_hardiron_bias_e3;
+    mag_data.vector.e1 -= mag_hardiron_bias_e1;
+    mag_data.vector.e2 -= mag_hardiron_bias_e2;
+    mag_data.vector.e3 -= mag_hardiron_bias_e3;
 
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = sun_data;
@@ -570,7 +593,7 @@ void SensorRead(void *par) {
 
 void ActuatorControl(void *par) {
   xSemaphoreTake(binarykey2, portMAX_DELAY);
-  struct MagnetorquerScalarData receivedScalarData;
+  MagnetorquerScalarData receivedScalarData;
   // Enable H-Bridges
   enable_mag(true);
   // Set PWM frequncy
@@ -606,13 +629,10 @@ void ActuatorControl(void *par) {
     if (xSemaphoreTake(binarykey1, pdMS_TO_TICKS(1)) ==
         pdTRUE) { // Check for signal from SensorRead
       // enable_mag(false); // Turn off Magnotorqer
-      vTaskDelay(pdMS_TO_TICKS(
-          MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
-      xSemaphoreGive(
-          binarykey1); // signal to SensorRead to measure magneticfield
+      vTaskDelay(pdMS_TO_TICKS(MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
+      xSemaphoreGive(binarykey1); // signal to SensorRead to measure magneticfield
       xSemaphoreGive(binarykey2); // give back the first key
-      xSemaphoreTake(binarykey3,
-                     portMAX_DELAY); // wait for SensorRead to be done
+      xSemaphoreTake(binarykey3, portMAX_DELAY); // wait for SensorRead to be done
       enable_mag(true);
       xSemaphoreGive(binarykey3);
       xSemaphoreTake(binarykey2, portMAX_DELAY);

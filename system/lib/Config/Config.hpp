@@ -18,8 +18,8 @@ static const BaseType_t app_cpu = 1;
 #define mag_scale_factor1 0.6  // 0.6uT/LSB
 #define mag_scale_factor2 0.15 // 0.15uT/LSB
 
-#define mag_hardiron_bias_e1 -5.500  //Calibration of the magnetometer x-axis 
-#define mag_hardiron_bias_e2 359.000 //Calibration of the magnetometer y-axis
+#define mag_hardiron_bias_e1 1.5  //Calibration of the magnetometer x-axis 
+#define mag_hardiron_bias_e2 34.0 //Calibration of the magnetometer y-axis
 #define mag_hardiron_bias_e3 0.0     //Calibration of the magnetometer z-axis
 
 #define LDR_MAX 4095           // LDR max value
@@ -33,7 +33,7 @@ static const BaseType_t app_cpu = 1;
 #define SCL 9 // Signal Clock Line pin
 
 // Control Loop
-#define CONTROL_PERIODE 0.5 // seconds
+#define CONTROL_PERIODE 0.25 // seconds
 #define K_P 0.4
 #define K_I 0.0
 #define K_D 2.0
@@ -47,7 +47,7 @@ const uint16_t SENSORREAD_PERIODE = (CONTROL_PERIODE * 1000.); // milisecond
 #define LDR_PIN_R 2            // LDR GPIO pin number
 #define LDR_PIN_B 0            // LDR GPIO pin number
 #define LDR_SAMPLES 30         // samples the ldr takes
-const uint8_t LDR_PERIODE = 5; // LDR sample rate in ms
+const uint8_t LDR_PERIODE = 2; // LDR sample rate in ms
                                //// The MAX time the ldr can take in millisecond
 
 // MAG
