@@ -241,7 +241,7 @@ void I2Cbus_SCCAN(void){
       {
         PRINT_DEBUG("0");
       }
-      PRINT_DEBUG((i, HEX));
+      PRINT_DEBUG_NR(i, HEX);
       PRINT_DEBUG(" !\n");
     }
     MPU_I2C.endTransmission();
@@ -267,7 +267,7 @@ uint8_t MPU_I2Cbus_SCCAN(void){
       PRINT_DEBUG("I2C device found at address 0x");
 
       if (i < 16) {PRINT_DEBUG("0");}
-      PRINT_DEBUG((unit_add_arr[i], HEX));
+      PRINT_DEBUG_NR(unit_add_arr[i], HEX);
       PRINT_DEBUG(" !\n");
     } else { no_ack++; }
     MPU_I2C.endTransmission();
