@@ -540,7 +540,7 @@ void SensorRead(void *par) {
   xLastWakeTime = xTaskGetTickCount(); // Get the current tick count
 
   // Task loop
-#if A //defined(DEBUG_CONTROL)
+#if defined(DEBUG_CONTROL)
   while (1) {
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = Vector{
@@ -628,7 +628,7 @@ void ActuatorControl(void *par) {
 
     if (xSemaphoreTake(binarykey1, pdMS_TO_TICKS(1)) ==
         pdTRUE) { // Check for signal from SensorRead
-      // enable_mag(false); // Turn off Magnotorqer
+      enable_mag(false); // Turn off Magnotorqer
       vTaskDelay(pdMS_TO_TICKS(MAG_POWER_DOWN_TIME_MS)); // Wait for magnototorer too power down
       xSemaphoreGive(binarykey1); // signal to SensorRead to measure magneticfield
       xSemaphoreGive(binarykey2); // give back the first key
