@@ -22,18 +22,13 @@ static const BaseType_t app_cpu = 1;
 #define mag_hardiron_bias_e2 34.0 //Calibration of the magnetometer y-axis
 #define mag_hardiron_bias_e3 0.0     //Calibration of the magnetometer z-axis
 
-#define LDR_MAX 4095           // LDR max value
-#define LDR_MIN 0              // LDR min value
-#define LDR_CALIBRATION_E1 411 // to much in this direction
-#define LDR_CALIBRATION_E2 397 // to much in this direction
-
 #define ClockSpeed 400000 // I2C clockspeed: 400kHz
 
 #define SDA 8 // Signal Data Line pin
 #define SCL 9 // Signal Clock Line pin
 
 // Control Loop
-#define CONTROL_PERIODE 0.25 // seconds
+#define CONTROL_PERIODE 0.5 // seconds
 #define K_P 0.4
 #define K_I 0.0
 #define K_D 2.0
@@ -49,6 +44,10 @@ const uint16_t SENSORREAD_PERIODE = (CONTROL_PERIODE * 1000.); // milisecond
 #define LDR_SAMPLES 30         // samples the ldr takes
 const uint8_t LDR_PERIODE = 2; // LDR sample rate in ms
                                //// The MAX time the ldr can take in millisecond
+#define LDR_MAX 4095           // LDR max value
+#define LDR_MIN 0              // LDR min value
+#define LDR_CALIBRATION_E1 0;//411 // to much in this direction
+#define LDR_CALIBRATION_E2 0;//397 // to much in this direction
 
 // MAG
 #define MAG1_EN 21               //

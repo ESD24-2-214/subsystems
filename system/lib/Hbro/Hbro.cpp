@@ -13,6 +13,7 @@ void pulse_mag(float scalar, int pinCW, int pinCCW) {
 #endif
 
   if (scalar <= 0) {
+    // Turning
     analogWrite(pinCCW, LOW);
     analogWrite(pinCW, pwm_val);
   } else {

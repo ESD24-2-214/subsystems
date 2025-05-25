@@ -6,10 +6,10 @@
  ** @param ldr_data: pointer to the LDRData_t structure
  */
 void ldr_read(LDRData_t *ldr_data) {
-  ldr_data->F = 4095 - analogRead(LDR_PIN_F); // Read the LDR value
-  ldr_data->L = 4095 - analogRead(LDR_PIN_L); // Read the LDR value
-  ldr_data->R = 4095 - analogRead(LDR_PIN_R); // Read the LDR value
-  ldr_data->B = 4095 - analogRead(LDR_PIN_B); // Read the LDR value
+  ldr_data->F = LDR_MAX - analogRead(LDR_PIN_F); // Read the LDR value
+  ldr_data->L = LDR_MAX - analogRead(LDR_PIN_L); // Read the LDR value
+  ldr_data->R = LDR_MAX - analogRead(LDR_PIN_R); // Read the LDR value
+  ldr_data->B = LDR_MAX - analogRead(LDR_PIN_B); // Read the LDR value
 }
 
 /* @brief This function sample reads the analog LDR values from the GPIO pins
@@ -81,5 +81,5 @@ void sun_read_data(Vector *sun_data, uint16_t t_ms, uint16_t samples) {
 
   sun_data->e1 = (ldr_data.F - ldr_data.B) - LDR_CALIBRATION_E1;
   sun_data->e2 = (ldr_data.L - ldr_data.R) - LDR_CALIBRATION_E2;
-  sun_data->e3 = 0;
+  sun_data->e3 = 0.00000000000f;
 }

@@ -48,7 +48,8 @@ void read_current_vector(Vector &local_current_world);
 void control_loop(void *pvParameters);
 void SensorRead(void *par);
 void ActuatorControl(void *par);
-// #define DEBUG_CONTROL
+//#define DEBUG_CONTROL
+//#define DEBUG_CONTROL_SENSOR_CONST
 void setup() {
 #if defined(DEBUG_CONTROL) // Release mode the Serial TX pin is
                   // used for the magnetorquer
@@ -146,7 +147,7 @@ void control_loop(void *pvParameters) {
   Matrix3x3 inertia_world;
 
   // Magnetorquers
-  float magnetorquer_dipole = 0.1318f; // ampere meter^2
+  float magnetorquer_dipole = 0.2535; // With 2x 9V bateries // 0.1318f; // 0.2amps unit [ampere meter^2]
   MagnetorquerScalarData magnetorquer_scalars;
   Bivector mag1_sat = Bivector{
       // This does not exist
@@ -540,7 +541,7 @@ void SensorRead(void *par) {
   xLastWakeTime = xTaskGetTickCount(); // Get the current tick count
 
   // Task loop
-#if defined(DEBUG_CONTROL)
+#if defined(DEBUG_CONTROL_SENSOR_CONST)
   while (1) {
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = Vector{
@@ -577,11 +578,20 @@ void SensorRead(void *par) {
     scale(&mag_data.vector, mag_data.scale_factor); 
     mag_data.vector.e1 -= mag_hardiron_bias_e1;
     mag_data.vector.e2 -= mag_hardiron_bias_e2;
-    mag_data.vector.e3 -= mag_hardiron_bias_e3;
+    mag_data.vector.e3 = 0.0000000000f;// -= mag_hardiron_bias_e3;
 
     data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
     data.sun_sat = sun_data;
+
+    #ifdef DEBUG_CONTROL
+        data.magno_sat = Vector{
+        .e1 = -sun_data.e2/4 ,
+        .e2 = sun_data.e1/4 ,
+        .e3 = 0.0f,
+    };
+    #else
     data.magno_sat = mag_data.vector;
+    #endif
     data.gyro_sat = gyro_data.vector;
     data.accl_sat = accl_data.vector;
     xQueueOverwrite(xQueueSensorData, &data);
@@ -617,9 +627,9 @@ void ActuatorControl(void *par) {
         Serial.println(receivedScalarData.time_stamp_msec);
         Serial.print("\te12: ");
         Serial.println(receivedScalarData.scalar_for_e12, 6);
-        Serial.print("\te31: ");
+        Serial.print("\te31 MAG2: ");
         Serial.println(receivedScalarData.scalar_for_e31, 6);
-        Serial.print("\te23: ");
+        Serial.print("\te23 MAG1: ");
         Serial.println(receivedScalarData.scalar_for_e23, 6);
 
         xSemaphoreGive(mutexSerial);
