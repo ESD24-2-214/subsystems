@@ -79,7 +79,7 @@ void sun_read_data(Vector *sun_data, uint16_t t_ms, uint16_t samples) {
   LDRData_t ldr_data = {0, 0, 0, 0};
   ldr_read_data(&ldr_data, t_ms, samples);
 
-  sun_data->e1 = (ldr_data.F - ldr_data.B);
-  sun_data->e2 = (ldr_data.L - ldr_data.R);
+  sun_data->e1 = (ldr_data.F - ldr_data.B) - LDR_CALIBRATION_E1;
+  sun_data->e2 = (ldr_data.L - ldr_data.R) - LDR_CALIBRATION_E2;
   sun_data->e3 = 0;
 }

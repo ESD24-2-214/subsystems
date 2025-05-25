@@ -4,7 +4,7 @@
 #include <MPU_ADDRESS.hpp>
 #include <AK8963_ADDRESS.hpp>
 #include <DEBUG.hpp>
-
+#include <Config.hpp>
 
 MasterI2C MPU_I2C = MasterI2C(0); // I2C object
 
@@ -171,10 +171,11 @@ void read_magnetometer(Vector *mag_data)
   uint8_t stat = 0;
   uint8_t data[6] = {0};
   read(AK8963_ADDRESS, ST2, &stat, 1);   // Read ST2 register to clear the data
+  vTaskDelay(pdMS_TO_TICKS(7.2)); // Wait for 7.5ms to make sure the data is ready
   do
   {
     read(AK8963_ADDRESS, ST1, &stat, 1); // Read ST1 to cheak bit 0 for the data bit ready
-  } while (!(stat & 0b00000001)); // May be agresive use of CPU time but we use to cores Max wait 9ms typ 7.2ms
+  } while (!(stat & 0b01)); // May be agresive use of CPU time but we use to cores Max wait 9ms typ 7.2ms
 
   read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
   read(AK8963_ADDRESS, ST2, &stat, 1); // Read ST2 register to clear the data ready bit
@@ -183,9 +184,9 @@ void read_magnetometer(Vector *mag_data)
     ERROR_LOG("Magnetic sensor overflow", " ");  
     return; // If invalid we keep the last data
   }
-  mag_data -> e1 = (int16_t)(data[1] << 8 | data[0]);
-  mag_data -> e2 = (int16_t)(data[3] << 8 | data[2]);
-  mag_data -> e3 = (int16_t)(data[5] << 8 | data[4]);
+  mag_data -> e1 = ((int16_t)(data[1] << 8 | data[0]));
+  mag_data -> e2 = ((int16_t)(data[3] << 8 | data[2]));
+  mag_data -> e3 = ((int16_t)(data[5] << 8 | data[4]));
 }
 
 /* @brief This function is used to read the data from the sensor and scale it
@@ -211,18 +212,19 @@ int8_t read_data(SensorVector *Vec){
   {
   case MAGNOTOMETER:
     read_magnetometer(&Vec -> vector);
+    scale(&Vec -> vector, Vec -> scale_factor);
     break;
   case ACCELEROMETER:
     read_accelerometer(&Vec -> vector);
+    scale(&Vec -> vector, Vec -> scale_factor);
     break;
   case GYROSCOPE:
     read_gryroscope(&Vec -> vector);
+    scale(&Vec -> vector, Vec -> scale_factor);
     break;
   default:
     break;
   }
-
-  scale(&Vec -> vector, Vec -> scale_factor);
 
   return 0;
 }
@@ -301,7 +303,7 @@ void magnotometer_softreset(void){
 * @param Vec: the vector to scale
 * @param scale_factor: the factor to scale the vector by
 */
-void scale(Vector *Vec, double scale_factor){
+void scale(Vector *Vec, float scale_factor){
   Vec -> e1 = ((Vec -> e1) * scale_factor);
   Vec -> e2 = ((Vec -> e2) * scale_factor);
   Vec -> e3 = ((Vec -> e3) * scale_factor);
@@ -349,7 +351,7 @@ int8_t factorScale(SensorVector *Vec){
 ** @param scale_factor: the scale factor to set
 ** @note return: 0 if success, -1 if NULL pointer passed, 1 if sensor is unknown, 2 if scale factor is unknown 
 */
-int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor){
+int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, float scale_factor){
   if(Vec == NULL){
     ERROR_LOG("NULL pointer passed to initSensorVector", " ");
     return -1;
@@ -517,4 +519,32 @@ void mpu_debug_print(void){
   PRINT_DEBUG("\nGYRO_CONFIG : ");
   PRINT_DEBUG((data_byte, BIN));
   PRINT_DEBUG("\n");
+}
+
+/* @brief This function is used to read the magnetometer data in single measurement mode
+** @param mag_data: Must be Vector struct
+** @note If the magnetic sensor overflow the data is invalid and we keep the last data
+*/
+void read_magnetometer_single16(Vector *mag_data)
+{
+  uint8_t stat = 0;
+  uint8_t data[6] = {0};
+  read(AK8963_ADDRESS, ST2, &stat, 1);   // Read ST2 register to clear the data
+  write(AK8963_ADDRESS, CNTL1, 0b00010001); // Set to single measurement mode 16 bit
+  vTaskDelay(pdMS_TO_TICKS(7.2)); // Wait for 7.2ms to make sure the data is ready
+  do
+  {
+    read(AK8963_ADDRESS, ST1, &stat, 1); // Read ST1 to cheak bit 0 for the data bit ready
+  } while (!(stat & 0b01)); // May be agresive use of CPU time but we use two cores Max wait 9ms typ 7.2ms
+
+  read(AK8963_ADDRESS, MAGNO_XOUT_L, data, 6);
+  read(AK8963_ADDRESS, ST2, &stat, 1); // Read ST2 register to clear the data ready bit
+  if (stat & 0b00001000) // Check for magnetic sensor overflow i.e. the data is invalid
+  {
+    ERROR_LOG("Magnetic sensor overflow", " ");  
+    return; // If invalid we keep the last data
+  }
+  mag_data -> e1 = ((uint16_t)(data[1] << 8 | data[0]));
+  mag_data -> e2 = ((uint16_t)(data[3] << 8 | data[2]));
+  mag_data -> e3 = ((uint16_t)(data[5] << 8 | data[4]));
 }

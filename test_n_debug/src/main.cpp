@@ -11,121 +11,41 @@
 #include <cstdint>
 
 
-
-
-void SensorRead(void *par);
-struct SensorData {
-  uint32_t time_stamp_msec;
-  Vector magno_sat;
-  Vector sun_sat;
-  Vector gyro_sat;
-  Vector accl_sat;
-};
-struct MagnetorquerScalarData {
-  uint32_t time_stamp_msec;
-  float scalar_for_e12;
-  float scalar_for_e31;
-  float scalar_for_e23;
-};
-// Queues
-QueueHandle_t xQueueSensorData = NULL;
-QueueHandle_t xQueueMagnetorquerScalarData = NULL;
-// Task handles
-TaskHandle_t *SensorRead_th;
+SensorVector Mag_Data = {MAGNOTOMETER, mag_scale_factor2, AK8963_ADDRESS, MAGNO_XOUT_L, {0.0, 0.0, 0.0}};
+Vector Mag_calibration_data = {0.0, 0.0, 0.0};
+void calibrate_magnetometer(SensorVector *Vec, Vector *calibration_data) {
+  Vec->vector.e1 -= Mag_calibration_data.e1;
+  Vec->vector.e2 -= Mag_calibration_data.e2;
+  Vec->vector.e3 -= Mag_calibration_data.e3;
+}
 
 void setup() {
   Serial.begin(115200); // Initialize serial monitor
   while (!Serial) {}
+  MPU_I2C.begin(SDA, SCL, ClockSpeed); // Initialize I2C communication
   delay(2000); // Wait for serial monitor to open
+  mag_resolution_config(BIT_16); // Set magnetometer resolution to 16 bit
+  mag_meas_config(MEAS_MODE2); // Set magnetometer to power down mode
+  bypass_to_magnometer(true); // Set the bypass mode to true
+  delay(100); // Wait for the bypass mode to be set
+  MPU_I2Cbus_SCCAN(); // Scan the I2C bus for devices
+  write(AK8963_ADDRESS, ASTC, 0b00000000); // Set the magnetometer to power down mode
 
-  
-
-
-  // Queues
-  xQueueSensorData = xQueueCreate(1, sizeof(SensorData));
-  xQueueMagnetorquerScalarData =
-      xQueueCreate(1, sizeof(MagnetorquerScalarData));
-  if (xQueueSensorData == NULL) {/* Queue was not created and must not be used. */}
-
-  // Create tasks
-  xTaskCreatePinnedToCore(SensorRead,   // Function to call
-                          "SensorRead", // Name of the task
-                          1024,         // Stack size in bytes
-                          NULL,         // Task input parameter
-                          1,    // Task priority (0 to configMAX_PRIORITIES - 1)
-                          SensorRead_th, // Task handle
-                          pro_cpu); // Create SendToQueue
 }
 
-void SensorRead(void *par) {
-  // xSemaphoreTake(binarykey1, portMAX_DELAY);
-  if (MPU_I2C.begin(SDA, SCL, ClockSpeed) == false) {
-    Serial.println("I2C begin Failed!");
-  }
-  // Define param of task
-  const mag_resolution mag_res = BIT_16;          // mag resolution
-  const mag_meas_mode mag_mode = MEAS_MODE1;      // mag mode
-  const gyro_full_scale_range gyro_fs = GFS_500;  // gyro full scale range
-  const acc_full_scale_range accel_fs = AFS_2G;   // accel full scale range
-  const double gyro_scale = gyro_scale_factor500; // gyro scale factor
-  const double accel_scale = acc_scale_factor2g;  // accel scale factor
-  const double mag_scale = mag_scale_factor2;     // mag scale factor
-  SensorVector gyro_data = {unknown, 0, 0, 0, 0};
-  SensorVector accl_data = {unknown, 0, 0, 0, 0};
-  SensorVector mag_data = {unknown, 0, 0, 0, 0};
-  Vector sun_data = {0, 0, 0}; // LDR data structure
-  // Config thing
-  bypass_to_magnometer(true);
-  if (MPU_I2Cbus_SCCAN()) {
-    // ERROR
-  }
+float a = 0; 
 
-  mag_resolution_config(mag_res);
-  mag_meas_config(mag_mode);
-  gyro_fs_sel(gyro_fs);
-  accel_fs_sel(accel_fs);
-  write(AK8963_ADDRESS, ASTC, 0x00); // Making sure that selftest mode i off
+void loop() {
 
-  // Init of sensorvectors
-  initSensorVector(&gyro_data, GYROSCOPE, gyro_scale);
-  initSensorVector(&accl_data, ACCELEROMETER, accel_scale);
-  initSensorVector(&mag_data, MAGNOTOMETER, mag_scale);
-  SensorData data = {.time_stamp_msec = (xTaskGetTickCount()),
-                     .magno_sat = mag_data.vector,
-                     .sun_sat = sun_data,
-                     .gyro_sat = gyro_data.vector,
-                     .accl_sat = accl_data.vector};
-  
-  // Task loop
-  while (1) {
-    Serial.print("Start time: ");
-    Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
-    read_data(&gyro_data);
-    read_data(&accl_data);
-    
-    // xSemaphoreTake(binarykey3, portMAX_DELAY);
-    //   xSemaphoreGive(binarykey1); // Signal to ActuatorControl to stop magnotorqer
-    //     xSemaphoreTake(binarykey2, portMAX_DELAY); // wait for signal
+  read_magnetometer(&Mag_Data.vector); // Read magnetometer data
+  // scale(&Mag_Data.vector, Mag_Data.scale_factor); // Scale the magnetometer data
 
-        read_data(&mag_data); // measure magneticfield
+  delay(500); // Wait for 1 second
+  //calibrate_magnetometer(&Mag_Data, &Mag_calibration_data);
+  dataPrint(&Mag_Data.vector);
 
-    //     xSemaphoreGive(binarykey2); // return key
-    //   xSemaphoreTake(binarykey1, portMAX_DELAY); // Retrive key
-    // xSemaphoreGive(binarykey3);
-   
 
-    sun_read_data(&sun_data, LDR_PERIODE, LDR_SAMPLES);
-
-    data.time_stamp_msec = pdTICKS_TO_MS(xTaskGetTickCount()); // millisecond
-    data.sun_sat = sun_data;
-    data.magno_sat = mag_data.vector;
-    data.gyro_sat = gyro_data.vector;
-    data.accl_sat = accl_data.vector;
-    xQueueOverwrite(xQueueSensorData, &data);
-
-  }
+  // a = ((uint16_t)(0b10111110 << 8 | 0b11100111));
+  // Serial.println((uint16_t)a, BIN);
 }
-
-
-void loop() {}
 

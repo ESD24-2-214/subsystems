@@ -52,7 +52,7 @@ typedef enum {
 */
 typedef struct {
     Sensor sensor;
-    double scale_factor;
+    float scale_factor;
     uint8_t unit_addr;
     uint8_t local_addr;
 //  uint8_t full_scale_range;
@@ -117,10 +117,11 @@ void write(uint8_t unit_addr, uint8_t local_addr, uint8_t data_byte);
 void read_gryroscope(Vector *gyro_data);
 void read_accelerometer(Vector *acc_data);
 void read_magnetometer(Vector *mag_data);
-void scale(Vector *Vec, double scale_factor);
+void read_magnetometer_single16(Vector *mag_data);
+void scale(Vector *Vec, float scale_factor);
 int8_t factorScale(SensorVector *Vec);
 int8_t read_data(SensorVector *Vec);
-int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, double scale_factor);
+int8_t initSensorVector(SensorVector *Vec, Sensor sensor_t, float scale_factor);
 void set_2bit(uint8_t unit_addr, uint8_t local_addr, uint8_t bit2, uint8_t bitpos);
 void gyro_fs_sel(gyro_full_scale_range range);
 void accel_fs_sel(acc_full_scale_range range);
